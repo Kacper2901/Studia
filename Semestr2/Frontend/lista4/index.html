@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formularz kontaktowy</title>
+    <style>
+        /* zeby sie nie rozjechalp */
+        html {
+            font-size: clamp(1rem, 0.8rem + 0.8vw, 1.2rem);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            /* background-color: rgba(240, 235, 235, 0.824); */
+            background: linear-gradient(45deg, rgb(38, 3, 155), rgb(150, 0, 164));
+            margin: 0;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            padding: 2rem;
+            background-color: white;
+            box-shadow: 2px 2px 8px rgb(0, 0, 0);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .form__title {
+            text-align: center;
+            font-size: 3rem;
+            padding: 1rem;
+        }
+
+        .form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .form__group {
+            display: flex;
+            flex-direction: column;
+            /*labelka nad inputem domyslnie jest row czyli obok*/
+            padding: 1rem;
+        }
+
+        .form__label {
+            font-weight: bold;
+        }
+
+        .form__input,
+        .form__select,
+        .form__textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #0a0505;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            max-width: 100%;
+        }
+
+        .form__textarea {
+            resize: vertical;
+        }
+
+
+        .form__button {
+            width: 100%;
+            padding: 1.2rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            max-width: 100%;
+        }
+
+        .form__button:hover {
+            background-color: #0056b3;
+        }
+
+        .form__input:invalid,
+        .form__select:invalid,
+        .form__textarea:invalid {
+            border-color: red;
+        }
+
+        .newsletter__label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.2rem;
+            width: max-content;
+            /*dzieki temu klika sie tylko napis*/
+
+
+        }
+
+        .newsletter__input {
+            width: 1.2em;
+            height: 1.2em;
+        }
+
+        .form__group--full {
+            grid-column: 1 / -1;
+            /*elementy z ta klasa rozciagnal sie na wszystkie kolumny*/
+        }
+
+        @media(max-width: 768px) {
+            .form {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+        @media (pointer: coarse) {
+
+            /* jesli telefon to jedna kolumna */
+            .form {
+                grid-template-columns: 1fr;
+            }
+
+            .form__textarea {
+                min-height: 200px;
+            }
+
+            /* większy checkbox w newsletterze*/
+            .newsletter__input {
+                width: 3em;
+                height: 3em;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h1 class="form__title">Formularz kontaktowy</h1>
+        <form class="form">
+
+            <div class="form__group">
+                <label for="first-name" class="form__label">Imię*</label>
+                <input type="text" id="first-name" name="first-name" class="form__input" required>
+            </div>
+
+            <div class="form__group">
+                <label for="last-name" class="form__label">Nazwisko*</label>
+                <input type="text" id="last-name" name="last-name" class="form__input" required>
+            </div>
+
+            <div class="form__group">
+                <label for="email" class="form__label">Email*</label>
+                <input type="email" id="email" name="email" class="form__input" required
+                    pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$">
+            </div>
+
+            <div class="form__group">
+                <label for="phone" class="form__label">Numer telefonu</label>
+                <input type="tel" id="phone" name="phone" class="form__input" pattern="^\d{9}$">
+            </div>
+
+            <div class="form__group form__group--full">
+                <label class="newsletter__label">
+                    <input type="checkbox" class="newsletter__input">
+                    Zapisz mnie do newslettera
+                </label>
+            </div>
+
+            <div class="form__group form__group--full">
+                <label for="reason" class="form__label">Powód kontaktu*</label>
+                <select id="reason" name="reason" class="form__select" required>
+                    <option value="">-- Wybierz powód --</option>
+                    <option value="support">Wsparcie techniczne</option>
+                    <option value="offer">Oferta handlowa</option>
+                    <option value="other">Inne</option>
+                </select>
+            </div>
+
+            <div class="form__group form__group--full">
+                <label for="message" class="form__label">Wiadomość*</label>
+                <textarea id="message" name="message" class="form__textarea" rows="5" required></textarea>
+            </div>
+
+            <div class="form__group form__group--full">
+                <button type="submit" class="form__button">Wyślij</button>
+            </div>
+
+        </form>
+    </div>
+
+</body>
+
+</html>
