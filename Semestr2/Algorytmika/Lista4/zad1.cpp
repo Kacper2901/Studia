@@ -4,19 +4,15 @@
 #include <algorithm>
 
 const int N_max = 200000;
-const int log_max = 18;
+const int log_max = 20;
 long long tab[N_max][log_max];
 long long liczby[N_max];
 
-long long minimum(long long tab[N_max][log_max], int l, int r, int N, int Q)
+long long minimum(long long tab[N_max][log_max], int l, int r)
 {
     int len = r - l + 1;
     int log = (int)log2(len);
-
-    long long min_l = tab[l][log];
-    long long min_r = tab[r - log][log];
-
-    return std::min(min_l, min_r);
+    return std::min(tab[l][log], tab[r - (1 << log) + 1][log]);
 }
 
 int main()
@@ -43,19 +39,10 @@ int main()
         }
     }
 
-    for (int i = 0; i < log; i++)
-    {
-        for (int j = 0; j < N; j++)
-        {
-            std::cout << tab[j][i] << " ";
-        }
-        std::cout << std::endl;
-    }
-
     for (int i = 0; i < Q; i++)
     {
         std::cin >> l >> p;
-        std::cout << minimum(tab, l, p, N, Q) << std::endl;
+        std::cout << minimum(tab, l - 1, p - 1) << std::endl;
     }
 
     return 0;

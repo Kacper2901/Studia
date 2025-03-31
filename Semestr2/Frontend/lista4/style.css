@@ -1,0 +1,119 @@
+html {
+    font-size: clamp(1rem, 0.8rem + 0.8vw, 1.2rem);
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: rgba(240, 235, 235, 0.824);
+    margin: 0;
+    padding: 2rem;
+    min-height: 100vh;
+    height: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 0;
+    box-sizing: border-box;
+}
+
+.card {
+    padding: 2rem;
+    background: linear-gradient(45deg, rgb(2, 2, 148), rgb(189, 5, 189));
+    box-shadow: 0 2px 8px rgb(199, 186, 186);
+    border-radius: 20px;
+    z-index: 1;
+    width: 90%;
+    max-width: 800px;
+    min-height: auto;
+    height: auto;
+}
+
+
+.form__title {
+    text-align: center;
+    font-size: 3rem;
+    padding: 1rem;
+}
+
+.form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.form__group {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+}
+
+.form__label {
+    font-weight: bold;
+}
+
+.form__input {
+    width: 90%;
+    padding: 0.8rem;
+    border: 2px solid #0a0505;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.newsletter__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.newsletter__input {
+    width: 1.2em;
+    height: 1.2em;
+    margin-left: 1em;
+}
+
+.form__group--full {
+    grid-column: 1 / -1;
+    /* Zajmij od pierwszej do ostatniej kolumny */
+}
+
+.form__select {
+
+    width: 100%;
+    padding: 0.8rem;
+    border: 2px solid #0a0505;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.form__textarea {
+    width: 96%;
+    padding: 0.8rem;
+    border: 2px solid #0a0505;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    resize: vertical;
+}
+
+.form__button {
+    width: 100%;
+    padding: 1.2rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.form__button:hover {
+    background-color: #0056b3;
+}
+
+.form__input:invalid,
+.form__select:invalid,
+.form__textarea:invalid {
+    border-color: red;
+}

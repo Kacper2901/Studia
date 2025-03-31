@@ -9,23 +9,26 @@ struct Node
 };
 
 std::vector<Node> tree;
-void dfs(int parent)
+void dfs(int node, int parent)
 {
-    int max_sk_W = 0;
-    int max_sk_Wo = 0;
-    for (int node : tree[parent].child)
+
+    for (int n : tree[node].child)
     {
-        if (node != parent)
+        if (n != parent)
         {
-            dfs(node);
-            if (tree[node].sk_w > max_sk_W)
-                max_sk_W = tree[node].sk_w;
-            if (tree[node].sk_wo > max_sk_Wo)
-                max_sk_Wo = tree[node].sk_wo;
+            dfs(n, node);
+            tree[node].sk_wo += std::max(tree[n].sk_w, tree[n].sk_wo);
         }
     }
-    tree[parent].sk_w += max_sk_Wo + 1;
-    tree[parent].sk_wo += max_sk_W;
+    int connection;
+    for (int n : tree[node].child)
+    {
+        if (n != parent)
+        {
+            connection = 1 + tree[n].sk_wo + (tree[node].sk_wo - std::max(tree[n].sk_w, tree[n].sk_wo));
+            tree[node].sk_w = std::max(connection, tree[node].sk_w);
+        }
+    }
 }
 
 int main()
@@ -43,7 +46,7 @@ int main()
         tree[b].child.push_back(a);
     }
 
-    dfs(0);
+    dfs(0, -1);
 
     std::cout << std::max(tree[0].sk_w, tree[0].sk_wo);
     return 0;
