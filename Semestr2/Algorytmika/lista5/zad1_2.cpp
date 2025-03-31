@@ -4,7 +4,7 @@
 struct Node
 {
     std::vector<int> child;
-    int depth = 0;        // dlugosc galezi
+    int depth = 0;        // dlugosc galezi + krawedz z rodzicem
     int srednica_max = 0; // dlugosc poddrzew
 };
 
@@ -16,22 +16,23 @@ void dfs(int node, int parent)
 
     for (int child : tree[node].child)
     {
+
         if (child != parent)
         {
             dfs(child, node);
-            if (max1 < tree[child].depth)
+            if (max1 < tree[child].depth + 1)
             {
                 max2 = max1;
-                max1 = tree[child].depth;
+                max1 = tree[child].depth + 1;
             }
-            else if (max2 < tree[child].depth)
+            else if (max2 < tree[child].depth + 1)
             {
-                max2 = tree[child].depth;
+                max2 = tree[child].depth + 1;
             }
             tree[node].srednica_max = std::max(tree[child].srednica_max, tree[node].srednica_max);
         }
     }
-    tree[node].depth = max1 + 1;
+    tree[node].depth = max1;
     tree[node].srednica_max = std::max(max1 + max2, tree[node].srednica_max);
 }
 
