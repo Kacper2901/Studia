@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalkulator</title>
+</head>
+
+<body>
+  <div class="calculator">
+    <div class="calculator__display" id="display">0</div>
+    <div class="calculator__buttons">
+      <!-- cyfry i dzialania -->
+      <button class="calculator__button" data-value="7">7</button>
+      <button class="calculator__button" data-value="8">8</button>
+      <button class="calculator__button" data-value="9">9</button>
+      <button class="calculator__button" data-value="/">/</button>
+
+      <button class="calculator__button" data-value="4">4</button>
+      <button class="calculator__button" data-value="5">5</button>
+      <button class="calculator__button" data-value="6">6</button>
+      <button class="calculator__button" data-value="*">*</button>
+
+      <button class="calculator__button" data-value="1">1</button>
+      <button class="calculator__button" data-value="2">2</button>
+      <button class="calculator__button" data-value="3">3</button>
+      <button class="calculator__button" data-value="-">-</button>
+
+      <button class="calculator__button" data-value="0">0</button>
+      <button class="calculator__button" data-value=".">.</button>
+      <button class="calculator__button" data-value="+">+</button>
+      <button class="calculator__button" data-action="calculate">=</button>
+
+      <!-- usuwanie -->
+      <button class="calculator__button" data-action="delete">←</button>
+      <button class="calculator__button" data-action="clear">C</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

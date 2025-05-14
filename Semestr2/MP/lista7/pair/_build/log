@@ -1,0 +1,18 @@
+# dune utop
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /home/kacper/.cache/dune/db
+# Workspace root: /home/kacper/Pulpit/Studia/Studia/Semestr2/MP/lista7/pair
+# Auto-detected concurrency: 8
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /home/kacper/.opam/5.1.0/bin/ocamlc.opt -config > /tmp/dune_f2014f_output
+$ (cd _build/default && /home/kacper/.opam/5.1.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -24 -g -bin-annot -I .utop/.utop.eobjs/byte -I /home/kacper/.opam/5.1.0/lib/bytes -I /home/kacper/.opam/5.1.0/lib/findlib -I /home/kacper/.opam/5.1.0/lib/lambda-term -I /home/kacper/.opam/5.1.0/lib/logs -I /home/kacper/.opam/5.1.0/lib/lwt -I /home/kacper/.opam/5.1.0/lib/lwt/unix -I /home/kacper/.opam/5.1.0/lib/lwt_react -I /home/kacper/.opam/5.1.0/lib/mew -I /home/kacper/.opam/5.1.0/lib/mew_vi -I /home/kacper/.opam/5.1.0/lib/ocaml/compiler-libs -I /home/kacper/.opam/5.1.0/lib/ocaml/threads -I /home/kacper/.opam/5.1.0/lib/ocaml/unix -I /home/kacper/.opam/5.1.0/lib/ocplib-endian -I /home/kacper/.opam/5.1.0/lib/ocplib-endian/bigstring -I /home/kacper/.opam/5.1.0/lib/react -I /home/kacper/.opam/5.1.0/lib/result -I /home/kacper/.opam/5.1.0/lib/trie -I /home/kacper/.opam/5.1.0/lib/uchar -I /home/kacper/.opam/5.1.0/lib/utop -I /home/kacper/.opam/5.1.0/lib/uucp -I /home/kacper/.opam/5.1.0/lib/uuseg -I /home/kacper/.opam/5.1.0/lib/uutf -I /home/kacper/.opam/5.1.0/lib/xdg -I /home/kacper/.opam/5.1.0/lib/zed -I src/.pair.objs/byte -no-alias-deps -o .utop/.utop.eobjs/byte/dune__exe__Utop.cmo -c -impl .utop/utop.ml-gen)
+$ (cd _build/default && /home/kacper/.opam/5.1.0/bin/ocamlc.opt -w @1..3@5..28@31..39@43@46..47@49..57@61..62@67@69-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -24 -g -o .utop/utop.bc /home/kacper/.opam/5.1.0/lib/ocaml/compiler-libs/ocamlcommon.cma /home/kacper/.opam/5.1.0/lib/ocaml/compiler-libs/ocamlbytecomp.cma /home/kacper/.opam/5.1.0/lib/ocaml/compiler-libs/ocamltoplevel.cma /home/kacper/.opam/5.1.0/lib/findlib/findlib.cma /home/kacper/.opam/5.1.0/lib/findlib/findlib_top.cma /home/kacper/.opam/5.1.0/lib/logs/logs.cma /home/kacper/.opam/5.1.0/lib/lwt/lwt.cma /home/kacper/.opam/5.1.0/lib/logs/logs_lwt.cma /home/kacper/.opam/5.1.0/lib/ocplib-endian/ocplib_endian.cma /home/kacper/.opam/5.1.0/lib/ocplib-endian/bigstring/ocplib_endian_bigstring.cma /home/kacper/.opam/5.1.0/lib/ocaml/unix/unix.cma /home/kacper/.opam/5.1.0/lib/ocaml/threads/threads.cma /home/kacper/.opam/5.1.0/lib/lwt/unix/lwt_unix.cma -I /home/kacper/.opam/5.1.0/lib/lwt/../stublibs /home/kacper/.opam/5.1.0/lib/react/react.cma /home/kacper/.opam/5.1.0/lib/lwt_react/lwt_react.cma /home/kacper/.opam/5.1.0/lib/result/result.cma /home/kacper/.opam/5.1.0/lib/uutf/uutf.cma /home/kacper/.opam/5.1.0/lib/uucp/uucp.cma /home/kacper/.opam/5.1.0/lib/uuseg/uuseg.cma /home/kacper/.opam/5.1.0/lib/zed/zed.cma /home/kacper/.opam/5.1.0/lib/trie/trie.cma /home/kacper/.opam/5.1.0/lib/mew/mew.cma /home/kacper/.opam/5.1.0/lib/mew_vi/mew_vi.cma /home/kacper/.opam/5.1.0/lib/lambda-term/lambda_term.cma -I /home/kacper/.opam/5.1.0/lib/lambda-term/../stublibs /home/kacper/.opam/5.1.0/lib/xdg/xdg.cma -I /home/kacper/.opam/5.1.0/lib/xdg/../stublibs /home/kacper/.opam/5.1.0/lib/utop/uTop.cma src/pair.cma .utop/.utop.eobjs/byte/dune__exe__Utop.cmo -linkall -warn-error -31)
