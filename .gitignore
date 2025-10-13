@@ -1,0 +1,97 @@
+# ===================================================================
+# Pliki konfiguracyjne IDE (VS Code, IntelliJ IDEA)
+# ===================================================================
+.vscode/
+.idea/
+*.iml
+*.iws
+out/
+
+
+# ===================================================================
+# Java (Maven/Gradle)
+# ===================================================================
+target/
+build/
+*.class
+*.jar
+*.war
+*.ear
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+
+
+# ===================================================================
+# Python
+# ===================================================================
+# Pliki bajtkodu i cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Wirtualne środowiska
+venv/
+env/
+.venv/
+.env/
+
+# Pakiety dystrybucyjne
+dist/
+build/
+*.egg-info/
+*.egg
+
+
+# ===================================================================
+# OCaml & Dune
+# ===================================================================
+# Folder budowania Dune
+_build/
+
+# Lokalne zależności opam
+_opam/
+
+# Pliki skompilowane
+*.cmo
+*.cmi
+*.cma
+*.cmx
+*.cmxa
+*.cmxs
+*.a
+*.o
+
+
+# ===================================================================
+# C++
+# ===================================================================
+# Pliki obiektowe, biblioteki i pliki wykonywalne
+*.o
+*.a
+*.so
+*.lib
+*.dll
+*.exe
+*.out
+*.app
+
+# Foldery budowania (np. dla CMake)
+build/
+cmake-build-*/
+
+
+# ===================================================================
+# Pliki systemowe i logi
+# ===================================================================
+# Logi
+*.log
+logs/
+
+# Pliki generowane przez system operacyjny
+.DS_Store
+Thumbs.db
