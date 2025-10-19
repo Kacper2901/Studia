@@ -163,40 +163,66 @@ void crazy_square(){
     int y_limit;
     int shift;
 
-    final String[] coordinates = {"left", "up", "right", "down"};
+    String[] coordinates = {"left","up","right","down"};
 
-    while (counter < 10){
+    while (counter < 20){
         ++counter;
+        boolean moved = false;
         draw_frame_c(x1, y1, x2, y2, '*');
-        delay(3000);
+        delay(200);
         draw_frame_c(x1, y1, x2, y2, ' ');
 
-        int choice = (int)(Math.random()*3);
-        switch (choice){
-            case 0:
-                x_limit = x1;
-                shift = (int)(Math.random()*x_limit);
-                x1 -= shift;
-                x2 -= shift;
-                break;
-            case 1:
-                y_limit = y1;
-                shift = (int)(Math.random()*y_limit);
-                y1 -= shift;
-                y2 -= shift;
-                break;
-            case 2:
-                x_limit = 120 - x2 + 1;
-                shift = (int)(Math.random()*x_limit);
-                x1 += shift;
-                x2 += shift;
-                break;
-            case 3:
-                y_limit = 30 - y2 + 1;
-                shift = (int)(Math.random()*y_limit);
-                y1 += shift;
-                y2 += shift;
-                break;
+        while (!moved) {
+            int choice = (int) (Math.random() * 4);
+
+            switch (coordinates[choice]) {
+                case "left":
+                    if (x1 == 1) {
+                        continue;
+                    }
+
+                    x_limit = x1 - 1;
+                    shift = (int) (Math.random() * x_limit + 1);
+                    x1 -= shift;
+                    x2 -= shift;
+                    moved = true;
+                    break;
+
+                case "up":
+                    if (y1 == 1) {
+                        continue;
+                    }
+                    y_limit = y1 - 1;
+                    shift = (int) (Math.random() * y_limit + 1);
+                    y1 -= shift;
+                    y2 -= shift;
+                    moved = true;
+                    break;
+
+                case "right":
+                    if (x2 == 120) {
+                        continue;
+                    }
+
+                    x_limit = 120 - x2;
+                    shift = (int) (Math.random() * x_limit + 1);
+                    x1 += shift;
+                    x2 += shift;
+                    moved = true;
+                    break;
+
+                case "down":
+                    if (y2 == 30) {
+                        continue;
+                    }
+
+                    y_limit = 30 - y2;
+                    shift = (int) (Math.random() * y_limit + 1);
+                    y1 += shift;
+                    y2 += shift;
+                    moved = true;
+                    break;
+            }
         }
     }
 }
