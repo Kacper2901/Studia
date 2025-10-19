@@ -56,12 +56,11 @@ void setbgcolor(int n) {
     print(String.format(SET_BG_COLOR,n));
 }
 
-//add your procedures here
 
-
-void move_square(int[] square, String[] directions){
+//procedures which are doing more than they supposed to
+void BAD_move_square(int[] square, String[] directions){
     boolean moved = false;
-    
+
     while (!moved) {
         int choice = (int) (Math.random() * 4);
         int limit;
@@ -116,6 +115,75 @@ void move_square(int[] square, String[] directions){
                 break;
         }
     }
+}
+
+void BAD_crazy_square(){
+    clrscr();
+    setfgcolor(white);
+    int counter = 0;
+
+    int[] square = {20,20,22,22};
+    String[] coordinates = {"left","up","right","down"};
+
+    while (counter < 20){
+        ++counter;
+        draw_frame_c(square[0], square[1], square[2], square[3], '*');
+        delay(200);
+        draw_frame_c(square[0], square[1], square[2], square[3], ' ');
+        BAD_move_square(square, coordinates);
+    }
+}
+
+
+//add your procedures here
+
+void move_square(int n, int[] square, String[] direction){
+    boolean moved = false;
+
+    while (!moved){
+        String dir = direction[(int)(Math.random()*4)];
+
+        switch (dir){
+            case "left":
+                if(square[0] - n < 1){continue;}
+                square[0] -= n;
+                square[2] -= n;
+                moved = true;
+                break;
+            case "up":
+                if(square[1] - n < 1){continue;}
+                square[1] -= n;
+                square[3] -= n;
+                moved = true;
+                break;
+            case "right":
+                if(square[2] + n > 120){continue;}
+                square[0] += n;
+                square[2] += n;
+                moved = true;
+                break;
+            case "down":
+                if(square[3] + n > 30){continue;}
+                square[1] += n;
+                square[3] += n;
+                moved = true;
+                break;
+        }
+    }
+}
+
+int[] fill_x_coordinates(int[] coordinates){
+    for(int i = 0; i < coordinates.length; ++i){
+        coordinates[i] = (int)(Math.random()*118 + 1);
+    }
+    return coordinates;
+}
+
+int[] fill_y_coordinates(int[] coordinates){
+    for(int i = 0; i < coordinates.length; ++i){
+        coordinates[i] = (int)(Math.random()*28 + 1);
+    }
+    return coordinates;
 }
 
 void draw_horiz_line(int x1, int x2, int y){
@@ -210,100 +278,32 @@ void crazy_star(){
     }
 }
 
-void crazy_square(){
+
+
+void crazy_square(int n){
     clrscr();
     setfgcolor(white);
-
     int counter = 0;
-    int x1 = 20;
-    int y1 = 20;
-    int x2 = 22;
-    int y2 = 22;
-    int x_limit;
-    int y_limit;
-    int shift;
 
+    int[] square = {20,20,22,22};
     String[] coordinates = {"left","up","right","down"};
 
     while (counter < 20){
-        ++counter;
-        boolean moved = false;
-        draw_frame_c(x1, y1, x2, y2, '*');
+//        ++counter;
+        draw_frame_c(square[0], square[1], square[2], square[3], '*');
         delay(200);
-        draw_frame_c(x1, y1, x2, y2, ' ');
-
-        while (!moved) {
-            int choice = (int) (Math.random() * 4);
-
-            switch (coordinates[choice]) {
-                case "left":
-                    if (x1 == 1) {
-                        continue;
-                    }
-
-                    x_limit = x1 - 1;
-                    shift = (int) (Math.random() * x_limit + 1);
-                    x1 -= shift;
-                    x2 -= shift;
-                    moved = true;
-                    break;
-
-                case "up":
-                    if (y1 == 1) {
-                        continue;
-                    }
-                    y_limit = y1 - 1;
-                    shift = (int) (Math.random() * y_limit + 1);
-                    y1 -= shift;
-                    y2 -= shift;
-                    moved = true;
-                    break;
-
-                case "right":
-                    if (x2 == 120) {
-                        continue;
-                    }
-
-                    x_limit = 120 - x2;
-                    shift = (int) (Math.random() * x_limit + 1);
-                    x1 += shift;
-                    x2 += shift;
-                    moved = true;
-                    break;
-
-                case "down":
-                    if (y2 == 30) {
-                        continue;
-                    }
-
-                    y_limit = 30 - y2;
-                    shift = (int) (Math.random() * y_limit + 1);
-                    y1 += shift;
-                    y2 += shift;
-                    moved = true;
-                    break;
-            }
-        }
+        draw_frame_c(square[0], square[1], square[2], square[3], ' ');
+        move_square(n, square, coordinates);
     }
 }
 
-void crazy_squares() {
+void crazy_squares(int n) {
     clrscr();
-    setfgcolor(white);
-
 
     int[] first = {20, 20, 22, 22}; // first four are coordinates of square, last will be storing choice of movement
     int[] second = {20, 20, 22, 22};
     int[] third = {20, 20, 22, 22};
-
-
     int counter = 0;
-
-    int x_limit;
-    int y_limit;
-    int shift1;
-    int shift2;
-    int shift3;
 
     String[] coordinates = {"left", "up", "right", "down"};
 
@@ -321,11 +321,69 @@ void crazy_squares() {
         draw_frame_c(second[0], second[1], second[2], second[3], ' ');
         draw_frame_c(third[0], third[1], third[2], third[3], ' ');
 
-
-        move_square(first,coordinates);
-        move_square(second, coordinates);
-        move_square(third, coordinates);
+        move_square(n, first,coordinates);
+        move_square(n, second, coordinates);
+        move_square(n, third, coordinates);
     }
+}
+
+void planned_squares(){
+    clrscr();
+
+    int[] first_x = fill_x_coordinates(new int[15]); // first four are coordinates of square, last will be storing choice of movement
+    int[] first_y = fill_y_coordinates(new int[15]); // first four are coordinates of square, last will be storing choice of movement
+    int[] second_x = fill_x_coordinates(new int[15]);
+    int[] second_y = fill_y_coordinates(new int[15]);
+    int[] third_x =fill_x_coordinates(new int[15]);
+    int[] third_y = fill_y_coordinates(new int[15]);;
+    int j = 0;
+    int i;
+
+    while(true){
+        i = j % 15;
+        setfgcolor(red);
+        draw_frame_c(first_x[i], first_y[i], first_x[i] + 2, first_y[i] + 2, '*');
+        setfgcolor(blue);
+        draw_frame_c(second_x[i], second_y[i], second_x[i] + 2, second_y[i] + 2, '*');
+        setfgcolor(green);
+        draw_frame_c(third_x[i], third_y[i], third_x[i] + 2, third_y[i] + 2, '*');
+        delay(200);
+        draw_frame_c(first_x[i], first_y[i], first_x[i] + 2, first_y[i] + 2, ' ');
+        draw_frame_c(second_x[i], second_y[i], second_x[i] + 2, second_y[i] + 2, ' ');
+        draw_frame_c(third_x[i], third_y[i], third_x[i] + 2, third_y[i] + 2, ' ');
+        ++j;
+    }
+}
+
+void planned_squares2(){
+    clrscr();
+
+    int[] first_x = fill_x_coordinates(new int[8]); // first four are coordinates of square, last will be storing choice of movement
+    int[] first_y = fill_y_coordinates(new int[8]); // first four are coordinates of square, last will be storing choice of movement
+    int[] second_x = fill_x_coordinates(new int[15]);
+    int[] second_y = fill_y_coordinates(new int[15]);
+    int[] third_x =fill_x_coordinates(new int[4]);
+    int[] third_y = fill_y_coordinates(new int[4]);;
+    int i = 0;
+
+
+    while(true){
+        setfgcolor(red);
+        draw_frame_c(first_x[i % 8], first_y[i % 8], first_x[i % 8] + 2, first_y[i % 8] + 2, '*');
+        setfgcolor(blue);
+        draw_frame_c(second_x[i % 15], second_y[i % 15], second_x[i % 15] + 2, second_y[i % 15] + 2, '*');
+        setfgcolor(green);
+        draw_frame_c(third_x[i % 4], third_y[i % 4], third_x[i % 4] + 2, third_y[i % 4] + 2, '*');
+        delay(200);
+        draw_frame_c(first_x[i % 8], first_y[i % 8], first_x[i % 8] + 2, first_y[i % 8] + 2, ' ');
+        draw_frame_c(second_x[i % 15], second_y[i % 15], second_x[i % 15] + 2, second_y[i % 15] + 2, ' ');
+        draw_frame_c(third_x[i % 4], third_y[i % 4], third_x[i % 4] + 2, third_y[i % 4] + 2, ' ');
+        ++i;
+    }
+}
+
+void spiral(int x, int y, char c, int s){
+
 }
 void main() {
      
@@ -360,7 +418,7 @@ void main() {
 //    gotoxy(1,1);
 
     //zad1 horizontal
-//    print("zadanie 1: ")
+//    print("press enter to start ex1.1:");;
 //    readln();
 //    cursor_hide();
 //    clrscr();
@@ -374,7 +432,7 @@ void main() {
 //    delay(800);
 //
 //
-//    //zad1 vertical
+//    print("press enter to start ex1.2:");;
 //    draw_vert_line(10,14, 3);
 //    delay(800);
 //    draw_vert_line(1,6, 16);
@@ -383,7 +441,7 @@ void main() {
 //    readln();
 //    clrscr();
 
-//    print("zadanie2");
+//    print("press enter to start ex2:");;
 //    readln();
 //    clrscr();
 //    cursor_hide();
@@ -397,8 +455,7 @@ void main() {
 //    readln();
 //    clrscr();
 
-//    print("zadanie3");
-//    readln();
+//    print("press enter to start ex3:");;//    readln();
 //    clrscr();
 //    cursor_hide();
 //    draw_frame_c(2,5,8, 10, 'c');
@@ -412,25 +469,41 @@ void main() {
 //    clrscr();
 
 //    cursor_hide();
-//    print("zadanie4: ");
+//    print("press enter to start ex4:");;
 //    readln();
 //    clrscr();
 //    crazy_star();
 //    clrscr();
 
 //    cursor_hide();
-//    print("zadanie5: ");
+//    print("press enter to start ex5:");
 //    readln();
 //    clrscr();
-//    crazy_square();
+//    crazy_square(5);
+//    readln();
+//    clrscr();
+
+//    cursor_hide();
+//    print("press enter to start ex6:");
+//    readln();
+//    clrscr();
+//    crazy_squares(3);
+//    readln();
+//    clrscr();
+
+//    cursor_hide();
+//    print("press enter to start ex7:");
+//    readln();
+//    clrscr();
+//    planned_squares();
 //    readln();
 //    clrscr();
 
     cursor_hide();
-    print("zadanie6: ");
+    print("press enter to start ex8:");
     readln();
     clrscr();
-    crazy_squares();
+    planned_squares2();
     readln();
     clrscr();
 }
