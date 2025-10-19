@@ -58,6 +58,66 @@ void setbgcolor(int n) {
 
 //add your procedures here
 
+
+void move_square(int[] square, String[] directions){
+    boolean moved = false;
+    
+    while (!moved) {
+        int choice = (int) (Math.random() * 4);
+        int limit;
+        int shift;
+
+        switch (directions[choice]) {
+            case "left":
+                if (square[0] == 1) {
+                    continue;
+                }
+
+                limit = square[0] - 1;
+                shift = (int) (Math.random() * limit + 1);
+                square[0] -= shift;
+                square[2] -= shift;
+                moved = true;
+                break;
+
+            case "up":
+                if (square[1] == 1) {
+                    continue;
+                }
+                limit = square[1] - 1;
+                shift = (int) (Math.random() * limit + 1);
+                square[1] -= shift;
+                square[3] -= shift;
+                moved = true;
+                break;
+
+            case "right":
+                if (square[2] == 120) {
+                    continue;
+                }
+
+                limit = 120 - square[2];
+                shift = (int) (Math.random() * limit + 1);
+                square[2] += shift;
+                square[0] += shift;
+                moved = true;
+                break;
+
+            case "down":
+                if (square[3] == 30) {
+                    continue;
+                }
+
+                limit = 30 - square[3];
+                shift = (int) (Math.random() * limit + 1);
+                square[1] += shift;
+                square[3] += shift;
+                moved = true;
+                break;
+        }
+    }
+}
+
 void draw_horiz_line(int x1, int x2, int y){
     if (x2 < x1){
         int temp = x1;
@@ -102,7 +162,7 @@ void draw_horiz_line_c(int x1, int x2, int y, char c){
         x2 = temp;
     }
     gotoxy(x1,y);
-    setfgcolor(white);
+//    setfgcolor(white);
     while (x1 <= x2){
         print(c);
         ++x1;
@@ -117,7 +177,7 @@ void draw_vert_line_c(int x, int y1, int y2, char c){
         y2 = temp;
     }
     gotoxy(x,y1);
-    setfgcolor(white);
+//    setfgcolor(white);
     while (y1 <= y2){
         print(c);
         ++y1;
@@ -227,7 +287,46 @@ void crazy_square(){
     }
 }
 
+void crazy_squares() {
+    clrscr();
+    setfgcolor(white);
 
+
+    int[] first = {20, 20, 22, 22}; // first four are coordinates of square, last will be storing choice of movement
+    int[] second = {20, 20, 22, 22};
+    int[] third = {20, 20, 22, 22};
+
+
+    int counter = 0;
+
+    int x_limit;
+    int y_limit;
+    int shift1;
+    int shift2;
+    int shift3;
+
+    String[] coordinates = {"left", "up", "right", "down"};
+
+    while (counter < 200) {
+        ++counter;
+
+        setfgcolor(red);
+        draw_frame_c(first[0], first[1], first[2], first[3], '*');
+        setfgcolor(blue);
+        draw_frame_c(second[0], second[1], second[2], second[3], '*');
+        setfgcolor(green);
+        draw_frame_c(third[0], third[1], third[2], third[3], '*');
+        delay(200);
+        draw_frame_c(first[0], first[1], first[2], first[3], ' ');
+        draw_frame_c(second[0], second[1], second[2], second[3], ' ');
+        draw_frame_c(third[0], third[1], third[2], third[3], ' ');
+
+
+        move_square(first,coordinates);
+        move_square(second, coordinates);
+        move_square(third, coordinates);
+    }
+}
 void main() {
      
     //example of the usage of procedures defined above
@@ -319,11 +418,19 @@ void main() {
 //    crazy_star();
 //    clrscr();
 
+//    cursor_hide();
+//    print("zadanie5: ");
+//    readln();
+//    clrscr();
+//    crazy_square();
+//    readln();
+//    clrscr();
+
     cursor_hide();
-    print("zadanie5: ");
+    print("zadanie6: ");
     readln();
     clrscr();
-    crazy_square();
+    crazy_squares();
     readln();
     clrscr();
 }
