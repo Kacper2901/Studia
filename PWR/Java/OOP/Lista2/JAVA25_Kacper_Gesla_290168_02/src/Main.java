@@ -323,8 +323,6 @@ void crazy_star(){
     }
 }
 
-
-
 void crazy_square(int n){
     clrscr();
     setfgcolor(white);
@@ -588,7 +586,7 @@ void main() {
     print("press enter to start ex9:");
     readln();
     clrscr();
-    colored_spiral(70,15,'#', 30);
+    spiral(70,15,'#', 30);
 
 
     readln();
