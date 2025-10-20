@@ -136,6 +136,51 @@ void BAD_crazy_square(){
 
 
 //add your procedures here
+void draw_horiz_line_c_con(int x1, int x2, int y, char c) {
+    int shift = 1;
+    if (x2 < x1){
+        shift = -1;
+    }
+    gotoxy(x1,y);
+    while (x1 != x2){
+        if (x1 <= 120 && x1 >= 1 && y <= 30 && y >= 1) {
+            print(c);
+        }
+        delay(50);
+        x1 += shift;
+        gotoxy(x1,y);
+    }
+    if (x1 <= 120 && x1 >= 1 && y <= 30 && y >= 1) {
+        print(c);
+    }
+    delay(50);
+    x1 += shift;
+    gotoxy(x1,y);
+}
+
+void draw_vert_line_c_con(int x, int y1, int y2, char c){
+    int shift = 1;
+    if (y2 < y1){
+        shift = -1;
+    }
+    gotoxy(x,y1);
+//    setfgcolor(white);
+    while (y1 != y2){
+        if (y1 <= 30 && y1 >= 1 && x >= 1 && x <= 120) {
+            print(c);
+        }
+        delay(50);
+        y1 += shift;
+        gotoxy(x,y1);
+    }
+    if (y1 <= 30 && y1 >= 1 && x >= 1 && x <= 120) {
+        print(c);
+    }
+    delay(50);
+    y1 += shift;
+    gotoxy(x,y1);
+
+}
 
 void move_square(int n, int[] square, String[] direction){
     boolean moved = false;
@@ -384,21 +429,39 @@ void planned_squares2(){
 
 void spiral(int x, int y, char c, int s){
     setfgcolor(white);
-    for (int i = 4; i > 0; i += 2){
-        draw_horiz_line_c(x,y,x - i,c);
-        delay(50);
+    for (int i = 2; i < s * 4 + 1; i += 4){
+        draw_horiz_line_c_con(x, x - i, y, c); //left
         x -= i;
-        draw_vert_line_c(x,y,y+i,c);
-        delay(50);
+
+        draw_vert_line_c_con(x, y, y + i, c); //down
         y += i;
-        draw_horiz_line_c(x, y, x + i + 2, c);
-        delay(50);
+
+        draw_horiz_line_c_con(x, x + i + 2, y, c); //right
         x += i + 2;
-        draw_vert_line_c(x, y, y - i - 2, c);
-        delay(500);
+
+        draw_vert_line_c_con(x, y, y - i - 2, c); //up
         y -= (i + 2);
     }
 }
+
+void colored_spiral(int x, int y, char c, int s){
+    for (int i = 1; i < s * 2 + 1; i += 2){
+        setfgcolor((int)(Math.random()*16));
+        draw_horiz_line_c_con(x, x - i, y, c); //left
+        x -= i;
+
+        draw_vert_line_c_con(x, y, y + i, c); //down
+        y += i;
+
+        draw_horiz_line_c_con(x, x + i + 1, y, c); //right
+        x += i + 1;
+
+        draw_vert_line_c_con(x, y, y - i - 1, c); //up
+        y -= (i + 1);
+    }
+}
+
+
 void main() {
      
     //example of the usage of procedures defined above
@@ -525,7 +588,9 @@ void main() {
     print("press enter to start ex9:");
     readln();
     clrscr();
-    spiral(20,20,'#', 5);
+    colored_spiral(70,15,'#', 30);
+
+
     readln();
     clrscr();
 }
