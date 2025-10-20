@@ -383,7 +383,21 @@ void planned_squares2(){
 }
 
 void spiral(int x, int y, char c, int s){
-
+    setfgcolor(white);
+    for (int i = 4; i > 0; i += 2){
+        draw_horiz_line_c(x,y,x - i,c);
+        delay(50);
+        x -= i;
+        draw_vert_line_c(x,y,y+i,c);
+        delay(50);
+        y += i;
+        draw_horiz_line_c(x, y, x + i + 2, c);
+        delay(50);
+        x += i + 2;
+        draw_vert_line_c(x, y, y - i - 2, c);
+        delay(500);
+        y -= (i + 2);
+    }
 }
 void main() {
      
@@ -499,11 +513,19 @@ void main() {
 //    readln();
 //    clrscr();
 
+//    cursor_hide();
+//    print("press enter to start ex8:");
+//    readln();
+//    clrscr();
+//    planned_squares2();
+//    readln();
+//    clrscr();
+
     cursor_hide();
-    print("press enter to start ex8:");
+    print("press enter to start ex9:");
     readln();
     clrscr();
-    planned_squares2();
+    spiral(20,20,'#', 5);
     readln();
     clrscr();
 }
