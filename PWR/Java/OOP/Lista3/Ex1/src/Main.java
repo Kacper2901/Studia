@@ -4,30 +4,33 @@ import static term.term.*;     //include package term (clrscr, gotoxt, setfgcolo
 
 //add your procedures and functions here
 void draw_tree(int N){
-    final int mid = 24;
-    int interval = 0;
-    if (N > 0 && N <= 23){
+    setbgcolor(white);
+    clrscr();
+    final int max = 22;
+    int starsCounter = 0;
+    if (N > 0 && N < 23){
+        setfgcolor(green);
         for (int i = 1; i <= N + 2; i++){
-            for (int j = 1; j <= mid; j++) {
+            for (int j = 1; j <= 22; j++) {
                 if (i <= N) {
-                    interval += 1;
-                    if (j > mid - interval && j < mid + interval) {
-                        print(" *");
+                    if (j > 22 - i) {
+                        print("* ");
                     } else {
                         print(" ");
                     }
                 }
                 else{
+                    setfgcolor(brown);
                     if (N < 4) {
-                        if (j == 24) {
+                        if (j == 22) {
                             print("|");
                         } else {
-                            print(" |");
+                            print(" ");
                         }
                         i += 1;
                     }
                     else {
-                        if (j == 24) {
+                        if (j == 21) {
                             print("|||");
                         }
                         else {
@@ -47,4 +50,8 @@ void draw_tree(int N){
 
 void main() {
     draw_tree(3);
+    print("\n");
+    draw_tree(1);
+    print("\n");
+    draw_tree(22);
 }
