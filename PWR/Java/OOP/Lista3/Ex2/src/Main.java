@@ -18,20 +18,33 @@ String treeLine(int stars){
     return line;
 }
 
+
 void drawTreeBranches(int x, int y, int row, int width){
     int realWidth = treeWidth(width);
     int realStars = starsInLine(row);
     String line = treeLine(realStars);
-
     int startingPoint = x + (realWidth - realStars) / 2;
 
     gotoxy(startingPoint, y);
+    setfgcolor(green);
     print(line);
+
 }
 
 void draw_ctree(int x, int y, int n){
     for (int i = 1; i <= n; i++){
         drawTreeBranches(x, y + i, i, n);
+    }
+
+    setfgcolor(brown);
+
+    if (n > 4){
+        gotoxy(x + n -1 , y + n + 1);
+        print("║");
+    }
+    else {
+        gotoxy(x + n - 1 , y + n + 1);
+        print("|");
     }
 }
 
