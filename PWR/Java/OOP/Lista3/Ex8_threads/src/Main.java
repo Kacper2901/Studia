@@ -19,6 +19,9 @@ public void draw_frame_c(int x, int y, char c){
     framexyc(x, y, x + 2, y + 2, c);
 }
 
+public class TermLock {
+    public static final Object DRAW_LOCK = new Object();
+}
 
 class Ghost extends Thread{
     public int posx, posy;
@@ -39,12 +42,15 @@ class Ghost extends Thread{
     @Override
     public void run() {
         while (true){
-            setfgcolor(this.color);
-            draw_frame_c(this.posx, this.posy, this.c);
-            delay(500);
-            draw_frame_c(this.posx, this.posy, ' ');
+            synchronized (TermLock.DRAW_LOCK) {
+                setfgcolor(this.color);
+                draw_frame_c(this.posx, this.posy, this.c);
+                delay(500);
+                draw_frame_c(this.posx, this.posy, ' ');
+            }
             move_ghost(this.posx, this.posy, this.directions);
             delay(20);
+
         }
     }
 
@@ -118,38 +124,40 @@ class MainSquare extends Thread{
 
 
         while (true) {
-            setfgcolor(colors[color % 3]);
 
-            if (keypressed()) {
-                String keystr = readkeystr();
-                pastx = posx;
-                pasty = posy;
-                if (keystr.equals("w")) {
-                    posy = guard_pos_y(posy - 1);
+                if (keypressed()) {
+                    String keystr = readkeystr();
+                    pastx = posx;
+                    pasty = posy;
+                    if (keystr.equals("w")) {
+                        posy = guard_pos_y(posy - 1);
+                    }
+                    if (keystr.equals("s")) {
+                        posy = guard_pos_y(posy + 1);
+                    }
+                    if (keystr.equals("a")) {
+                        posx = guard_pos_x(posx - 1);
+                    }
+                    if (keystr.equals("d")) {
+                        posx = guard_pos_x(posx + 1);
+                    }
+                    if (keystr.equals("c")) {
+                        color += 1;
+                        setfgcolor(colors[color % 3]);
+                        draw_frame_c(posx, posy, '*');
+                    }
+                    if (keystr.equals("x")) {
+                        clrscr();
+                        break;
+                    }
+                    synchronized (TermLock.DRAW_LOCK) {
+                        setfgcolor(colors[color % 3]);
+                        draw_frame_c(pastx, pasty, ' ');
+                        draw_frame_c(posx, posy, '*');
+                    }
                 }
-                if (keystr.equals("s")) {
-                    posy = guard_pos_y(posy + 1);
-                }
-                if (keystr.equals("a")) {
-                    posx = guard_pos_x(posx - 1);
-                }
-                if (keystr.equals("d")) {
-                    posx = guard_pos_x(posx + 1);
-                }
-                if (keystr.equals("c")) {
-                    color += 1;
-                    setfgcolor(colors[color % 3]);
-                    draw_frame_c(posx, posy, '*');
-                }
-                if (keystr.equals("x")) {
-                    clrscr();
-                    break;
-                }
+                delay(20);
 
-                draw_frame_c(pastx, pasty, ' ');
-                draw_frame_c(posx, posy, '*');
-            }
-            delay(20);
         }
     }
 }
@@ -165,11 +173,8 @@ void main() {
     Ghost ghost2 = new Ghost(50, 20, '$', yellow);
 
     mainSquare.start();
-    delay(20);
     ghost1.start();
-    delay(20);
     ghost2.start();
-    delay(20);
 
 
 }
