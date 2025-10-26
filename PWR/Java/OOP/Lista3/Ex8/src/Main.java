@@ -3,154 +3,139 @@ import static java.lang.IO.*;  //including package IO to be able to use simple p
 import static term.term.*;     //include package term (clrscr, gotoxt, setfgcolor, etc., were moved there for clarity)
 
 //add your procedures and functions here
-public int guard_pos_x(int x) {
+private int getRndNum(int min, int max){
+    return (int)(Math.random()*(max - min) + min);
+}
+
+int guard_pos_x(int x) {
     if (x > 118) return 118;
     else if (x < 2) return 2;
     else return x;
 }
 
-public int guard_pos_y(int y){
+int guard_pos_y(int y){
     if(y < 2) return 2;
     else if(y > 28) return 28;
     else return y;
 }
 
-public void draw_frame_c(int x, int y, char c){
+void draw_frame_c(int x, int y, char c){
     framexyc(x, y, x + 2, y + 2, c);
 }
 
+final int[] colors = {green, blue, red};
+final String[] DIRECTION = {"up", "down", "left", "right"};
 
-class Ghost extends Thread{
-    public int posx, posy;
-    public int pastx, pasty;
-    public int color;
-    public char c;
-    private final String[] directions = {"up", "down", "left", "right"};
+public void move_ghost(int[] curr, int[] past, String[] direction){
+    boolean moved = false;
+    int n;
 
-    public Ghost(int posx, int posy, char c, int color){
-        this.posx = posx;
-        this.posy = posy;
-        this.c = c;
-        this.color = color;
-        this.pastx = posx;
-        this.pasty = posy;
-    }
 
-    @Override
-    public void run() {
-        while (true){
-            setfgcolor(this.color);
-            draw_frame_c(this.posx, this.posy, this.c);
-            delay(500);
-            draw_frame_c(this.posx, this.posy, ' ');
-            move_ghost(this.posx, this.posy, this.directions);
-            delay(20);
+
+    while (!moved){
+        String dir = direction[(int)(Math.random()*4)];
+
+        switch (dir){
+            case "left":
+                n = getRndNum(1, curr[0] - 2);
+                if(curr[0] - n < 1){continue;}
+                past[0] = curr[0];
+                curr[0] -= n;
+                moved = true;
+                break;
+            case "up":
+                n = getRndNum(1, curr[1] - 2);
+                if(curr[1] - n < 1){continue;}
+                past[1] = curr[1];
+                curr[1] -= n;
+                moved = true;
+                break;
+            case "right":
+                n = getRndNum(1, 117 - curr[0]);
+                if(curr[0] + n + 2> 120){continue;}
+                past[0] = curr[0];
+                curr[0] += n;
+                moved = true;
+                break;
+            case "down":
+                n = getRndNum(1, 27 - curr[1]);
+                if(curr[1] + n + 2> 30){continue;}
+                past[1] = curr[1];
+                curr[1] += n;
+                moved = true;
+                break;
         }
-    }
 
-    private int getRndNum(int min, int max){
-        return (int)(Math.random()*(max - min) + min);
-    }
-
-    public void move_ghost(int posx, int posy, String[] direction){
-        boolean moved = false;
-        int n;
-
-        while (!moved){
-            String dir = direction[(int)(Math.random()*4)];
-
-            switch (dir){
-                case "left":
-                    n = getRndNum(1, posx - 2);
-                    if(posx - n < 1){continue;}
-                    this.pastx = this.posx;
-                    this.posx -= n;
-                    moved = true;
-                    break;
-                case "up":
-                    n = getRndNum(1, posy - 2);
-                    if(posy - n < 1){continue;}
-                    this.pasty = this.posy;
-                    this.posy -= n;
-                    moved = true;
-                    break;
-                case "right":
-                    n = getRndNum(1, 117 - posx);
-                    if(posx + n + 2> 120){continue;}
-                    this.pastx = this.posx;
-                    this.posx += n;
-                    moved = true;
-                    break;
-                case "down":
-                    n = getRndNum(1, 27 - posy);
-                    if(posy + n + 2> 30){continue;}
-                    this.pasty = this.posy;
-                    this.posy += n;
-                    moved = true;
-                    break;
-            }
-        }
     }
 }
 
 
+void square_control(int posx, int posy){
+    int color = 0;
+    int pastx, pasty;
+    long loops = 0;
+    int[] ghost1 = {50, 20};
+    int[] ghost1_past = {50, 20};
+    int[] ghost2 = {30, 10};
+    int[] ghost2_past = {30, 10};
 
-class MainSquare extends Thread{
-    public int posx, posy;
-    public final int[] colors = {green, blue, red};
+    setfgcolor(grey);
+    draw_frame_c(ghost1[0], ghost1[1], '$');
+    setfgcolor(yellow);
+    draw_frame_c(ghost2[0], ghost2[1], '$');
 
-    public MainSquare(int posx, int posy){
-        this.posx = posx;
-        this.posy = posy;
-    }
-
-     @Override
-    public void run() {
-        this.square_control(this.posx, this.posy);
-    }
-
-    void square_control(int posx, int posy) {
-        cursor_hide();
-        int color = 0;
-        int pastx, pasty;
-
-        draw_frame_c(posx, posy, '*');
+    setfgcolor(colors[color % 3]);
+    draw_frame_c(posx, posy, '*');
 
 
-        while (true) {
-            setfgcolor(colors[color % 3]);
 
-            if (keypressed()) {
-                String keystr = readkeystr();
-                pastx = posx;
-                pasty = posy;
-                if (keystr.equals("w")) {
-                    posy = guard_pos_y(posy - 1);
-                }
-                if (keystr.equals("s")) {
-                    posy = guard_pos_y(posy + 1);
-                }
-                if (keystr.equals("a")) {
-                    posx = guard_pos_x(posx - 1);
-                }
-                if (keystr.equals("d")) {
-                    posx = guard_pos_x(posx + 1);
-                }
-                if (keystr.equals("c")) {
-                    color += 1;
-                    setfgcolor(colors[color % 3]);
-                    draw_frame_c(posx, posy, '*');
-                }
-                if (keystr.equals("x")) {
-                    clrscr();
-                    break;
-                }
 
-                draw_frame_c(pastx, pasty, ' ');
+    while(true){
+        if(keypressed()) {
+            String keystr = readkeystr();
+            pastx = posx;
+            pasty = posy;
+            if (keystr.equals("w")) {
+                posy = guard_pos_y(posy - 1);
+            }
+            if (keystr.equals("s")) {
+                posy = guard_pos_y(posy + 1);
+            }
+            if (keystr.equals("a")) {
+                posx = guard_pos_x(posx - 1);
+            }
+            if (keystr.equals("d")) {
+                posx = guard_pos_x(posx + 1);
+            }
+            if (keystr.equals("c")) {
+                color += 1;
+                setfgcolor(colors[color % 3]);
                 draw_frame_c(posx, posy, '*');
             }
-            delay(20);
+            if (keystr.equals("x")) {
+                clrscr();
+                print(loops);
+                break;
+            }
+            setfgcolor(colors[color % 3]);
+            draw_frame_c(pastx, pasty, ' ');
+            draw_frame_c(posx, posy, '*');
         }
+            delay(20);
+            if (loops % 10 == 0) {
+                setfgcolor(yellow);
+                draw_frame_c(ghost1_past[0], ghost1_past[1], ' ');
+                move_ghost(ghost1, ghost1_past, DIRECTION);
+                draw_frame_c(ghost1_past[0], ghost1_past[1], '$');
+
+                setfgcolor(grey);
+                draw_frame_c(ghost2_past[0], ghost2_past[1], ' ');
+                move_ghost(ghost2, ghost2_past, DIRECTION);
+                draw_frame_c(ghost2_past[0], ghost2_past[1], '$');
+
+            }
+            loops += 1;
+
     }
 }
 
@@ -160,16 +145,6 @@ void main() {
     clrscr();
     framexyc(1,1, 121, 31, '#');
 
-    MainSquare mainSquare = new MainSquare(20, 20);
-    Ghost ghost1 = new Ghost(80, 20, '$', red);
-    Ghost ghost2 = new Ghost(50, 20, '$', yellow);
-
-    mainSquare.start();
-    delay(20);
-    ghost1.start();
-    delay(20);
-    ghost2.start();
-    delay(20);
-
+    square_control(20,20);
 
 }
