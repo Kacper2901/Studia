@@ -35,8 +35,8 @@ long fibonacci_rectail(long n, long res, long prev){
     return fibonacci_rectail(n - 1, prev + res, res);
 }
 
-double round_to_6frac(double n){
-    return Math.round(n * 1_000_000.0) / 1_000_000.0;
+String round_to_6frac(double n){
+    return String.format("%.6f", n);
 }
 
 void main() {
