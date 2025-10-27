@@ -1,3 +1,5 @@
+//Kacper Gęśla 2901268
+
 import static java.lang.IO.*;  //including package IO to be able to use simple print()
 import static term.term.*;     //include package term (clrscr, gotoxt, setfgcolor, etc., were moved there for clarity)
 
@@ -50,8 +52,11 @@ void draw_ctree(int x, int y, int n){
 
 void main() {
 
+setbgcolor(white);
+clrscr();
 draw_ctree(20, 10,  4);
 draw_ctree(50, 1,  3);
 draw_ctree(50, 20,  9);
+print("\n");
 
 }
