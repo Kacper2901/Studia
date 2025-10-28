@@ -2,7 +2,7 @@
 //Some features are not OS independent (e.g. terminal resize does not work in most of Windows terminals, setup them manually to 120x30)
 //Author: Maciej Huk
 //version 0v3
-package Ex8_threads.src.term;
+package term;
 
 import java.io.IOException;
 import org.jline.terminal.Terminal;

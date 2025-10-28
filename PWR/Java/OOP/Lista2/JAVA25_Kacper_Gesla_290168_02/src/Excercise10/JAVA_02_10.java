@@ -115,6 +115,7 @@ void colored_spiral(int x, int y, char c, int s){
 
         draw_vert_line_c_con(x, y, y + i, c); //down
         y += i;
+        setfgcolor((int)(Math.random()*16));
 
         draw_horiz_line_c_con(x, x + i + 1, y, c); //right
         x += i + 1;

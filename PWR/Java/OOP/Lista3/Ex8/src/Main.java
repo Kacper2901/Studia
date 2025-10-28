@@ -1,10 +1,10 @@
-//For best results run this code in at least 120x30 terminal window
+//Kacper Gęśla 2901268
 import static java.lang.IO.*;  //including package IO to be able to use simple print()
 import static term.term.*;     //include package term (clrscr, gotoxt, setfgcolor, etc., were moved there for clarity)
 
 //add your procedures and functions here
 private int getRndNum(int min, int max){
-    return (int)(Math.random()*(max - min) + min);
+    return (int)(Math.random()*(max - min + 1) + min);
 }
 
 int guard_pos_x(int x) {
@@ -26,40 +26,35 @@ void draw_frame_c(int x, int y, char c){
 final int[] colors = {green, blue, red};
 final String[] DIRECTION = {"up", "down", "left", "right"};
 
-public void move_ghost(int[] curr, int[] past, String[] direction){
+public void move_ghost(int n, int[] curr, int[] past, String[] direction){
     boolean moved = false;
-    int n;
 
 
 
     while (!moved){
-        String dir = direction[(int)(Math.random()*4)];
+        String dir = direction[getRndNum(0,3)];
 
         switch (dir){
             case "left":
-                n = getRndNum(1, curr[0] - 2);
-                if(curr[0] - n < 1){continue;}
+                if(curr[0] - n <=  1){continue;}
                 past[0] = curr[0];
                 curr[0] -= n;
                 moved = true;
                 break;
             case "up":
-                n = getRndNum(1, curr[1] - 2);
-                if(curr[1] - n < 1){continue;}
+                if(curr[1] - n <= 1){continue;}
                 past[1] = curr[1];
                 curr[1] -= n;
                 moved = true;
                 break;
             case "right":
-                n = getRndNum(1, 117 - curr[0]);
-                if(curr[0] + n + 2> 120){continue;}
+                if(curr[0] + n + 2 > 120){continue;}
                 past[0] = curr[0];
                 curr[0] += n;
                 moved = true;
                 break;
             case "down":
-                n = getRndNum(1, 27 - curr[1]);
-                if(curr[1] + n + 2> 30){continue;}
+                if(curr[1] + n + 2 > 30){continue;}
                 past[1] = curr[1];
                 curr[1] += n;
                 moved = true;
@@ -122,15 +117,15 @@ void square_control(int posx, int posy){
             draw_frame_c(posx, posy, '*');
         }
             delay(20);
-            if (loops % 10 == 0) {
+            if (loops % 5 == 0) {
                 setfgcolor(yellow);
                 draw_frame_c(ghost1_past[0], ghost1_past[1], ' ');
-                move_ghost(ghost1, ghost1_past, DIRECTION);
+                move_ghost(3, ghost1, ghost1_past, DIRECTION);
                 draw_frame_c(ghost1_past[0], ghost1_past[1], '$');
 
                 setfgcolor(grey);
                 draw_frame_c(ghost2_past[0], ghost2_past[1], ' ');
-                move_ghost(ghost2, ghost2_past, DIRECTION);
+                move_ghost(3, ghost2, ghost2_past, DIRECTION);
                 draw_frame_c(ghost2_past[0], ghost2_past[1], '$');
 
             }
@@ -143,8 +138,10 @@ void main() {
     setfgcolor(white);
     setbgcolor(black);
     clrscr();
+    cursor_hide();
     framexyc(1,1, 121, 31, '#');
 
     square_control(20,20);
+
 
 }

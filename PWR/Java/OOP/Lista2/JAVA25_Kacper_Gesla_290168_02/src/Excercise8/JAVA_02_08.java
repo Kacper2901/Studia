@@ -104,8 +104,8 @@ void draw_frame_c(int x1, int y1, int x2, int y2, char c){
 void planned_squares2(){
     clrscr();
 
-    int[] first_x = fill_x_coordinates(new int[8]); // first four are coordinates of square, last will be storing choice of movement
-    int[] first_y = fill_y_coordinates(new int[8]); // first four are coordinates of square, last will be storing choice of movement
+    int[] first_x = fill_x_coordinates(new int[8]);
+    int[] first_y = fill_y_coordinates(new int[8]);
     int[] second_x = fill_x_coordinates(new int[15]);
     int[] second_y = fill_y_coordinates(new int[15]);
     int[] third_x =fill_x_coordinates(new int[4]);
