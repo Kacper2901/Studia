@@ -352,6 +352,15 @@ public static void addExampleUniversityData(TUniversity univ) {
     addStudent(univ, createStudent(createPerson("Kyle", "Reese"), 3,3.5,5.5,4,4.5));  //objects are created just to pass the data as variables
     addStudent(univ, createStudent(createPerson("Peter", "Silberman"), 4,4.5));
     addStudent(univ, createStudent(createPerson("T800", "Cyberdyne"), 7,7,7,7,7));
+    addStudent(univ, createStudent(createPerson("Natan", "Marc"), 2,1,4,5));
+    addStudent(univ, createStudent(createPerson("Olaf", "Snowman"), 7,4,3,7,7));
+    addStudent(univ, createStudent(createPerson("Darth", "Vader"), 7,6,1,1,3,7));
+    addStudent(univ, createStudent(createPerson("Harry", "Potter"), 7,7,3,3,7));
+    addStudent(univ, createStudent(createPerson("Lionel", "Messi"), 1,2,3,4,5));
+    addStudent(univ, createStudent(createPerson("Cristiano", "Ronaldo"), 2,3,4,5,2,4));
+    addStudent(univ, createStudent(createPerson("Robert", "Lewandowski"), 7,6,5,4,3,2));
+    addStudent(univ, createStudent(createPerson("Lamine", "Yamal"), 1,2,1));
+    addStudent(univ, createStudent(createPerson("Jr", "Vinicious"), 7));
 
     setUniversity(univ, "Boston University", createAddress("USA", "Boston"), 1234567);
     univ.students[0].personal_data.sex=TSex.female;  //manual patching - not recommended but available
