@@ -1,5 +1,4 @@
-//this file presents two basic examples of the creation and usage of complex data types
-//until not told otherwise remove the code below before creating your solutions
+//Kacper Gęśla 290168
 
 import static java.lang.IO.*;  //including package IO to be able to use simple print()
 import static java.lang.IO.println;
