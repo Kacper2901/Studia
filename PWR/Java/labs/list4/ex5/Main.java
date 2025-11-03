@@ -12,6 +12,7 @@ String round_to_6frac(double n){
 double AccSpeed(double a, double tau){
     return a * tau;
 }
+
 double constSpeedDistance(double v, double tau){
     return v * tau;
 }
@@ -23,6 +24,7 @@ double inconAccSpeed(double t, double t2, double t_osc, double dev_v, double v2)
 double inconAcc(double t, double t2, double a2){
     return a2 * Math.sin(Math.PI / 2 * t / t2);
 }
+
 void printSituation(double time, double v1, double v2, double a1, double a2, double d1, double d2){
     gotoxy(1,1);
     println("time: " + round_to_6frac(time/60));
@@ -37,7 +39,6 @@ void printSituation(double time, double v1, double v2, double a1, double a2, dou
     print("d2 = " +round_to_6frac(d2/1000) + "km");
     println("");
     println("Total distance = " +round_to_6frac ((d1+d2)/1000) + "km");
-
 }
 
 String TrackOfDoom(double W, double X, double x1, double x2){
