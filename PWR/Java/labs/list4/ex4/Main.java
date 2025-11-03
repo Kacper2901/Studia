@@ -7,9 +7,14 @@ double AccDistance(double v, double a, double tau){
     return v * tau + a * tau * tau / 2;
 }
 
+String round_to_6frac(double n){
+    return String.format("%.2f", n);
+}
+
 double AccSpeed(double a, double tau){
     return a * tau;
 }
+
 double constSpeedDistance(double v, double tau){
     return v * tau;
 }
@@ -23,19 +28,18 @@ double inconAcc(double t, double t2, double a2){
 }
 void printSituation(double time, double v1, double v2, double a1, double a2, double d1, double d2){
     gotoxy(1,1);
-    println("time: " + time/60);
+    println("time: " + round_to_6frac(time/60));
+    print("P1:  ");
+    print("v1 = " + round_to_6frac(v1/3.6) + "m/s (" + round_to_6frac(v1) + "km/h), ");
+    print("a1 = " + round_to_6frac(a1) + "m/s², ");
+    print("d1 = " +round_to_6frac(d1/1000) + "km");
     println();
-    println("First train:");
-    println("Speed: " + v1);
-    println("Acceleration: " + a1);
-    println("Distance: " + d1);
-    println();
-    println("Second train:");
-    println("Speed: " + v2);
-    println("Acceleration: " + a2);
-    println("Distance: " + d2);
-    println();
-    println("Total distance: " + (d1+d2)/1000);
+    print("P2:  ");
+    print("v2 = " + round_to_6frac(v2/3.6) + "m/s (" + round_to_6frac(v2) + "km/h), ");
+    print("a2 = " + round_to_6frac(a2) + "m/s², ");
+    print("d2 = " +round_to_6frac(d2/1000) + "km");
+    println("");
+    println("Total distance = " +round_to_6frac ((d1+d2)/1000) + "km");
 }
 
 void collisionCalc(double X, double t1, double t2, double a1, double a2, double dev_v, double t_osc, double tau){
@@ -90,6 +94,7 @@ void collisionCalc(double X, double t1, double t2, double a1, double a2, double 
 
         totalDistance = d1 + d2;
     }
+    printSituation(totalTime,v1,v2,a1,acc2,d1,d2);
     cursor_show();
 
 }
