@@ -131,6 +131,8 @@ public enum TSex {    //enum type, static by default
     male, female, unknown
 }
 
+
+
 public static class TPerson {
     String personID;   //unique identifier
     String name;
@@ -347,20 +349,18 @@ public static void printUniversity(TUniversity uni) {
 }
 
 public static void addExampleUniversityData(TUniversity univ) {
-    TStudent s = createStudent(createPerson("Sarah", "Connor"), 4,3,5,4.5);
+    TStudent s = createStudent(createPerson("id0001","Sarah", "Connor", 12, 34, TSex.female, createAddress("Poland", "Opole","Jana Pawła", "12", "8")), 4,3,5,4.5);
     addStudent(univ, s);
-    addStudent(univ, createStudent(createPerson("Kyle", "Reese"), 3,3.5,5.5,4,4.5));  //objects are created just to pass the data as variables
-    addStudent(univ, createStudent(createPerson("Peter", "Silberman"), 4,4.5));
-    addStudent(univ, createStudent(createPerson("T800", "Cyberdyne"), 7,7,7,7,7));
-    addStudent(univ, createStudent(createPerson("Natan", "Marc"), 2,1,4,5));
-    addStudent(univ, createStudent(createPerson("Olaf", "Snowman"), 7,4,3,7,7));
-    addStudent(univ, createStudent(createPerson("Darth", "Vader"), 7,6,1,1,3,7));
-    addStudent(univ, createStudent(createPerson("Harry", "Potter"), 7,7,3,3,7));
-    addStudent(univ, createStudent(createPerson("Lionel", "Messi"), 1,2,3,4,5));
-    addStudent(univ, createStudent(createPerson("Cristiano", "Ronaldo"), 2,3,4,5,2,4));
-    addStudent(univ, createStudent(createPerson("Robert", "Lewandowski"), 7,6,5,4,3,2));
-    addStudent(univ, createStudent(createPerson("Lamine", "Yamal"), 1,2,1));
-    addStudent(univ, createStudent(createPerson("Jr", "Vinicious"), 7));
+    addStudent(univ, createStudent(createPerson("id0002","Kyle", "Reese", 18, 80, TSex.male, createAddress("Poland", "Wrocław", "Kopernika", "72", "1")), 3,3.5,5.5,4,4.5));  //objects are created just to pass the data as variables
+    addStudent(univ, createStudent(createPerson("id0003", "Peter", "Silberman", 14, 60, TSex.male, createAddress("Poland", "Zamość", "Lubelska", "111", "3" )), 4,4.5));
+    addStudent(univ, createStudent(createPerson("id0004", "T800", "Cyberdyne", 15, 70, TSex.male, createAddress("USA", "New York", "Broadway", "234", "123")), 7,7,7,7,7));
+    addStudent(univ, createStudent(createPerson("id0005", "Natan", "Marc", 19, 100, TSex.male,createAddress("Poland", "Szczebrzeszyn", "Cicha", "12", "12")), 2,1,4,5));
+    addStudent(univ, createStudent(createPerson("id0006", "Ola", "Snowman", 17, 47, TSex.female, createAddress("England", "London", "Baker Street", "221B", "5")), 7,4,3,7,7));
+    addStudent(univ, createStudent(createPerson("id0007", "Ala", "Kot", 15, 50, TSex.female, createAddress("Poland", "Legnica", "Krzywa", "51", "4")), 7,6,1,1,3,7));
+    addStudent(univ, createStudent(createPerson("id0008", "Harry", "Potter", 12, 36, TSex.male, createAddress("England", "Little Whinging", "Privet Drive", "4", "")), 7,7,3,3,7));
+    addStudent(univ, createStudent(createPerson("id0009", "Lionel", "Messi", 38, 67, TSex.male, createAddress("Argentina", "Rosario", "Pelota", "10", "")) , 1,2,3,4,5));
+    addStudent(univ, createStudent(createPerson("id0010", "Cristiano", "Ronaldo", 40, 83, TSex.male, createAddress("Portugal", "Funchal", "Maquina", "7", "")), 2,3,4,5,2,4));
+    addStudent(univ, createStudent(createPerson("id0011","Iga", "Świątek", 24, 68, TSex.female, createAddress("Poland", "Warszawa", "Grzybowska", "15", "12")), 7,6,5,4,3,2));
 
     setUniversity(univ, "Boston University", createAddress("USA", "Boston"), 1234567);
     univ.students[0].personal_data.sex=TSex.female;  //manual patching - not recommended but available
@@ -369,6 +369,162 @@ public static void addExampleUniversityData(TUniversity univ) {
     univ.students[findStudentIndexByName(univ,"T800")].personal_data.weight=180;  //very risky: if student not found => error
     //findStudentByName(univ1,"T800").personal_data.weight=180;   //also risky solution - NullPointerException if student not found
 }
+
+public static void addExampleUniversityData2(TUniversity univ) {
+    TStudent s = createStudent(createPerson("id0001","Sarah", "Connor", 12, 34, TSex.female, createAddress("Poland", "Opole","Jana Pawła", "12", "8")), 4,3,5,4.5);
+    addStudent(univ, s);
+    addStudent(univ, createStudent(createPerson("id0002","Kyle", "Reese", 18, 80, TSex.male, createAddress("Poland", "Wrocław", "Kopernika", "72", "1")), 3,3.5,5.5,4,4.5));  //objects are created just to pass the data as variables
+    addStudent(univ, createStudent(createPerson("id0003", "Peter", "Silberman", 14, 60, TSex.male, createAddress("Poland", "Zamość", "Lubelska", "111", "3" )), 4,4.5));
+    addStudent(univ, createStudent(createPerson("id0004", "T800", "Cyberdyne", 15, 70, TSex.male, createAddress("USA", "New York", "Broadway", "234", "123")), 7,7,7,7,7));
+
+
+    setUniversity(univ, "Wroclaw University", createAddress("Poland", "Wroclaw"), 1234567);
+    univ.students[0].personal_data.sex=TSex.female;  //manual patching - not recommended but available
+    univ.students[1].personal_data.sex=TSex.male;    //manual patching - not recommended but available
+    univ.students[2].personal_data.sex=TSex.male;    //manual patching - not recommended but available
+    univ.students[findStudentIndexByName(univ,"T800")].personal_data.weight=180;  //very risky: if student not found => error
+    //findStudentByName(univ1,"T800").personal_data.weight=180;   //also risky solution - NullPointerException if student not found
+}
+
+//my solutions
+public static class TSexRecords{
+    TSex sex;
+    TStudent[] students = new TStudent[MAX_PERSONS];
+    int students_count = 0;
+}
+
+public static TSexRecords createSexRecord(TSex sex, TStudent[] students){
+    TSexRecords r = new TSexRecords();
+    setSexRecord(sex, r, students);
+
+    return r;
+}
+
+public static void setSexRecord(TSex sex,TSexRecords r, TStudent[] students){
+    r.sex = sex;
+    r.students_count = 0;
+    for (TStudent s: students){
+        if(s.personal_data.sex == r.sex){
+            r.students[r.students_count] = s;
+            r.students_count += 1;
+        }
+    }
+}
+
+public static void printSexRecord(TSexRecords r){
+    println("-----Record of " + r.sex + " students-----\n");
+    for(int i = 0; i < r.students_count; i ++){
+        printStudent(r.students[i]);
+        println();
+    }
+}
+
+public enum TProperties{
+    weight, surname, city;
+}
+
+public static void sortStudents(TSexRecords r, TProperties key){
+    switch (key){
+        case weight:
+            for (int i = 0; i < r.students_count; i++){
+                for(int j = 1; j < r.students_count; j++){
+                    if (r.students[j - 1].personal_data.weight > r.students[j].personal_data.weight ){
+                        TStudent temp = r.students[j-1];
+                        r.students[j-1] = r.students[j];
+                        r.students[j] = temp;
+                    }
+                }
+            }
+            break;
+        case surname:
+            for (int i = 0; i < r.students_count; i++){
+                for(int j = 1; j < r.students_count-i; j++){
+                    if (r.students[j - 1].personal_data.surname.compareTo(r.students[j].personal_data.surname) > 0){
+                        TStudent temp = r.students[j];
+                        r.students[j] = r.students[j - 1];
+                        r.students[j-1] = temp;
+                    }
+                }
+            }
+            break;
+        case city:
+            for (int i = 0; i < r.students_count; i++){
+                for(int j = 1; j < r.students_count-i; j++){
+                    if (r.students[j - 1].personal_data.home_address.city.compareTo(r.students[j].personal_data.home_address.city) > 0){
+                        TStudent temp = r.students[j];
+                        r.students[j] = r.students[j - 1];
+                        r.students[j-1] = temp;
+                    }
+                }
+            }
+            break;
+    }
+}
+
+public static String getSex(TSex sex){
+    switch (sex){
+        case female:
+            return "female";
+        case male:
+            return "male";
+        case unknown:
+            return "unknown";
+    }
+    return "";
+}
+
+public static boolean compareStudents(TStudent s1, TStudent s2){
+    boolean same = true;
+    TPerson data1 = s1.personal_data;
+    TPerson data2 = s2.personal_data;
+
+    if(!data1.name.equals(data2.name) ||
+            !data1.surname.equals(data2.surname) ||
+            data1.age != data2.age ||
+            !getSex(data1.sex).equals(getSex(data2.sex)) ||
+            data1.weight != data2.weight ||
+            !data1.home_address.country.equals(data2.home_address.country) ||
+            !data1.home_address.city.equals(data2.home_address.city) ||
+            !data1.home_address.house_number.equals(data2.home_address.house_number) ||
+            !data1.home_address.flat_number.equals(data2.home_address.flat_number) ||
+            !data1.home_address.street.equals(data2.home_address.street))
+    {
+
+        return false;
+
+
+    }
+
+    return true;
+}
+
+public static TStudent copyStudent(TStudent src){
+        return createStudent(createPerson("", src.personal_data.name, src.personal_data.surname, src.personal_data.age,
+                src.personal_data.weight,src.personal_data.sex,
+                createAddress(src.personal_data.home_address.country,src.personal_data.home_address.city,src.personal_data.home_address.street,
+                src.personal_data.home_address.house_number,src.personal_data.home_address.flat_number)));
+}
+
+
+public static void extendUniversity(TUniversity university, TSexRecords r){
+    for (int i = 0; i < r.students_count; i++){
+        boolean exists = false;
+
+        for (int j = 0; j < university.studentCount; j++){
+            if (compareStudents(r.students[i], university.students[j])){
+                exists = true;
+                break;
+            }
+        }
+        if(!exists){
+            university.students[university.studentCount] = copyStudent(r.students[i]);
+            university.studentCount ++;
+        }
+
+    }
+}
+
+
 
 
 void main() {
@@ -381,8 +537,14 @@ void main() {
     //Example B: the University
     clrscr();
     TUniversity univ1 = createElements(TUniversity.class);  //"magic" line to allocate memory of the whole structure
+    TUniversity univ2 = createElements(TUniversity.class);  //"magic" line to allocate memory of the whole structure
+
 
     addExampleUniversityData(univ1);
+
+    addExampleUniversityData2(univ2);
+
+
 
     printUniversity(univ1);
     println();
@@ -390,6 +552,49 @@ void main() {
     println("=== Best Student ===");
     printStudent(findBestStudent(univ1));
     println("===============");
+    println();
+
+    TSexRecords femaleRecord = createSexRecord(TSex.female, univ1.students);
+    printSexRecord(femaleRecord);
+    println("==============");
+    println();
+
+    println("Sorted by weight: ");
+    sortStudents(femaleRecord, TProperties.weight);
+    printSexRecord(femaleRecord);
+    println();
+    println();
+
+    println("Sorted by surname: ");
+    sortStudents(femaleRecord, TProperties.surname);
+    printSexRecord(femaleRecord);
+    println();
+    println();
+
+    println("Sorted by city: ");
+    sortStudents(femaleRecord, TProperties.city);
+    printSexRecord(femaleRecord);
+    println();
+
+    println("==============");
+    println();
+    println();
+    println();
+    println();
+
+    println("Extend university by array of students");
+    println();
+    println("before:");
+    println();
+    printStudents(univ2);
+    extendUniversity(univ2,femaleRecord);
+    println();
+    println();
+    println();
+    println("after:");
+    println();
+    printStudents(univ2);
+    println();
 
     print("Press any key to continue...");
     wait_for_any_key();
