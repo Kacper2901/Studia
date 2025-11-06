@@ -40,7 +40,7 @@ int countDigits(int n){
     return res;
 }
 
-int reverse_number(int number){
+int reverseNumber(int number){
     int newNumber = 0;
 
     if (number == 0) return 0;
@@ -89,6 +89,35 @@ void multiplicationTable(int n){
         System.out.println(n + " x " + i + " = " + n*i);
     }
 }
+
+
+boolean isPalindrome(int n){
+    if (n == reverseNumber(n)) return true;
+    else return false;
+}
+
+void printFibonacci(int n){
+    int a = 0;
+    int b = 1;
+    int i = 2;
+    int temp;
+    if (n == 0) return;
+    System.out.println(a);
+    if (n == 1) return;
+    System.out.println(b);
+    if (n == 2) return;
+
+    while (i < n){
+        temp = b;
+        temp = a + b;
+        a = temp;
+        System.out.println(b);
+        i++;
+    }
+}
+
+
+
 
 
 
