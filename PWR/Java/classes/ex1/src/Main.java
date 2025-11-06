@@ -40,6 +40,58 @@ int countDigits(int n){
     return res;
 }
 
+int reverse_number(int number){
+    int newNumber = 0;
+
+    if (number == 0) return 0;
+
+    while (number > 0){
+        newNumber +=  number % 10;
+        number /= 10;
+        newNumber *= 10;
+    }
+
+    return newNumber;
+}
+
+
+boolean isPrime(int number){
+    for (int i = 2; i * i <= number; i++){
+        if(number % i == 0) return false;
+    }
+    return true;
+}
+
+
+int sumOfEvenNumbers(int n){
+    int res = 0;
+
+    for (int i = 2; i <= n; i += 2){
+        res += i;
+    }
+
+    return res;
+}
+
+int powerCalculator(int base, int exponent){
+    int res = 1;
+
+    while (exponent > 0){
+        res *= base;
+        exponent--;
+    }
+
+    return res;
+}
+
+void multiplicationTable(int n){
+    for (int i = 0; i <= 10; i++){
+        System.out.println(n + " x " + i + " = " + n*i);
+    }
+}
+
+
+
 void main() {
    System.out.println("Sum of 10 first numbers: ");
    System.out.println(sumOfNumbers(10));
