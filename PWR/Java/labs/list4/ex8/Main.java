@@ -3,62 +3,7 @@ import static java.lang.IO.*;  //including package IO to be able to use simple p
 import static java.lang.IO.println;
 import static term.term.*;    //including package to be able to use simple print()
 
-//move cursor position to column x, row y
-public static void gotoxy(int x, int y) {
-    String GOTO_XY = "\u001b[%d;%dH";
-    print(String.format(GOTO_XY, y, x));
-}
 
-//clear the terminal window
- public static void clrscr() {
-    String CLEAR_SCREEN = "\u001b[2J";
-    print(String.format(CLEAR_SCREEN));
-}
-
-public static void cursor_hide() {
-    String HIDE_CURSOR = "\u001b[?25l";
-    print(String.format(HIDE_CURSOR));
-}
-
-public static void cursor_show() {
-    String SHOW_CURSOR = "\u001b[?25h";
-    print(String.format(SHOW_CURSOR));
-}
-
-public static void delay(int msec) {
-    try {
-        Thread.sleep(msec);
-    } catch (InterruptedException e) {}
-}
-
-//constants with identifiers of basic colors
-//see: https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit
-final int black = 0;
-final int brown = 1;
-final int green = 2;
-final int yellow = 3;
-final int blue = 4;
-final int magenta = 5;
-final int cyan = 6;
-final int ltgrey = 7;
-final int grey = 8;
-final int red = 9;
-final int ltgreen = 10;
-final int ltyellow = 11;
-final int ltblue = 12;
-public static final int white = 15;
-
-//set text foreground color
-public static void setfgcolor(int n) {
-    String SET_FG_COLOR = "\u001b[38;5;%dm";
-    print(String.format(SET_FG_COLOR,n));
-}
-
-//set text background color
-void setbgcolor(int n) {
-    String SET_BG_COLOR = "\u001b[48;5;%dm";
-    print(String.format(SET_BG_COLOR,n));
-}
 
 
 
@@ -93,23 +38,26 @@ public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
 }
 
 public static void updateSquares(TBoards b){
-    for (TSquares s: b.squares){
-        if (s.coordinateIndex == 0){
-            draw_frame_c(s.x_coordinates[7], s.y_coordinates[7], ' ');
+    TSquares[] s = b.squares;
+    for (int i = 0; i < b.squaresCount; i++){
+        if (s[i].coordinateIndex == 0){
+            draw_frame_c(s[i].x_coordinates[7], s[i].y_coordinates[7], ' ');
         }
         else {
-            draw_frame_c(s.x_coordinates[s.coordinateIndex - 1],s.y_coordinates[s.coordinateIndex - 1], ' ');
+            draw_frame_c(s[i].x_coordinates[s[i].coordinateIndex - 1],s[i].y_coordinates[s[i].coordinateIndex - 1], ' ');
         }
 
-        setfgcolor(s.color);
-        draw_frame_c(s.x_coordinates[s.coordinateIndex], s.y_coordinates[s.coordinateIndex], '#');
-        s.coordinateIndex = (s.coordinateIndex + 1) % 8;
+        setfgcolor(s[i].color);
+        draw_frame_c(s[i].x_coordinates[s[i].coordinateIndex], s[i].y_coordinates[s[i].coordinateIndex], '#');
+        s[i].coordinateIndex = (s[i].coordinateIndex + 1) % 8;
+        i++;
     }
 }
 
 public static class TSquares{
     public int color;
     public int[] x_coordinates = new int[8];
+
     public int[] y_coordinates = new int[8];
     public  int coordinateIndex;
 }
@@ -131,7 +79,6 @@ public static TSquares createSquare(int color){
 
 public static void addSquare(TBoards b, TSquares s){
     b.squares[b.squaresCount] = s;
-    b.squaresCount ++;
 }
 
 public static void printBoard(TBoards b){
@@ -163,11 +110,9 @@ public static void startProgram(TBoards b){
 void main() {
 
     TBoards board1 = createElements(TBoards.class);
-    setBoard(board1, 1, 1, createSquare(yellow), createSquare(red), createSquare(ltgreen), createSquare(ltblue));
+    setBoard(board1, 1, 1, createSquare(yellow), createSquare(red), createSquare(ltgreen), createSquare(blue));
 
 
     startProgram(board1);
-
-
 
 }
