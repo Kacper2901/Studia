@@ -1,5 +1,7 @@
 
-import static java.lang.IO.*;  //including package to be able to use simple print()
+import static java.lang.IO.*;  //including package IO to be able to use simple print()
+import static java.lang.IO.println;
+import static term.term.*;    //including package to be able to use simple print()
 
 //move cursor position to column x, row y
 public static void gotoxy(int x, int y) {
@@ -8,22 +10,22 @@ public static void gotoxy(int x, int y) {
 }
 
 //clear the terminal window
-void clrscr() {
+ public static void clrscr() {
     String CLEAR_SCREEN = "\u001b[2J";
     print(String.format(CLEAR_SCREEN));
 }
 
-void cursor_hide() {
+public static void cursor_hide() {
     String HIDE_CURSOR = "\u001b[?25l";
     print(String.format(HIDE_CURSOR));
 }
 
-void cursor_show() {
+public static void cursor_show() {
     String SHOW_CURSOR = "\u001b[?25h";
     print(String.format(SHOW_CURSOR));
 }
 
-void delay(int msec) {
+public static void delay(int msec) {
     try {
         Thread.sleep(msec);
     } catch (InterruptedException e) {}
@@ -44,10 +46,10 @@ final int red = 9;
 final int ltgreen = 10;
 final int ltyellow = 11;
 final int ltblue = 12;
-final int white = 15;
+public static final int white = 15;
 
 //set text foreground color
-void setfgcolor(int n) {
+public static void setfgcolor(int n) {
     String SET_FG_COLOR = "\u001b[38;5;%dm";
     print(String.format(SET_FG_COLOR,n));
 }
@@ -58,23 +60,24 @@ void setbgcolor(int n) {
     print(String.format(SET_BG_COLOR,n));
 }
 
+
+
+
+public static void draw_frame_c(int x, int y, char c){
+    framexyc(x, y, x + 2, y + 2, c);
+}
+
 //add your procedures here
 int MAX_SQUARES = 200;
 
 
 public static class TBoards{
-    int x;
-    int y;
-    int hor_length = 120;
-    int vert_length = 30;
-    TSquares[] squares = new TSquares[200];
-    int squaresCount;
-}
-
-public static class TSquares{
-    int color;
-    int[] x_coordinates = new int[8];
-    int[] y_coordinates = new int[8];
+    public int x;
+    public int y;
+    public int hor_length = 120;
+    public int vert_length = 30;
+    public TSquares[] squares = new TSquares[200];
+    public int squaresCount;
 }
 
 public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
@@ -86,31 +89,37 @@ public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
         addSquare(b,s);
         b.squaresCount ++;
     }
+
 }
 
-public static void printArr(int[] a, int size){
-    for(int i = 0; i < size; i++){
-        print(a[i] + " ");
+public static void updateSquares(TBoards b){
+    for (TSquares s: b.squares){
+        if (s.coordinateIndex == 0){
+            draw_frame_c(s.x_coordinates[7], s.y_coordinates[7], ' ');
+        }
+        else {
+            draw_frame_c(s.x_coordinates[s.coordinateIndex - 1],s.y_coordinates[s.coordinateIndex - 1], ' ');
+        }
+
+        setfgcolor(s.color);
+        draw_frame_c(s.x_coordinates[s.coordinateIndex], s.y_coordinates[s.coordinateIndex], '#');
+        s.coordinateIndex = (s.coordinateIndex + 1) % 8;
     }
-    println(" ");
 }
 
-public static TBoards createBoard(int x, int y, TSquares... squares){
-    TBoards b = new TBoards();
-    setBoard(b, x, y, squares);
-    return b;
-}
-
-public static void addSquare(TBoards b, TSquares s){
-    b.squares[b.squaresCount] = s;
-    b.squaresCount ++;
+public static class TSquares{
+    public int color;
+    public int[] x_coordinates = new int[8];
+    public int[] y_coordinates = new int[8];
+    public  int coordinateIndex;
 }
 
 public static void setSquare(TSquares s, int color){
     s.color = color;
+    s.coordinateIndex = 1;
     for(int i = 0; i < 8; i++){
-        s.x_coordinates[i] = (int)(Math.random()*118 + 1);
-        s.y_coordinates[i] = (int)(Math.random()*28 + 1);
+        s.x_coordinates[i] = (int)(Math.random()*116 + 2);
+        s.y_coordinates[i] = (int)(Math.random()*26 + 2);
     }
 }
 
@@ -120,45 +129,45 @@ public static TSquares createSquare(int color){
     return s;
 }
 
-public static void draw_horiz_line_c(int x1, int x2, int y, char c){
-    gotoxy(x1,y);
-
-    while (x1 <= x2){
-        print(c);
-        ++x1;
-        gotoxy(x1,y);
-    }
-}
-
-public static void draw_vert_line_c(int x, int y1, int y2, char c){
-    gotoxy(x,y1);
-
-    while (y1 <= y2){
-        print(c);
-        ++y1;
-        gotoxy(x,y1);
-    }
-}
-
-public static void draw_frame_c(int x, int y, char c){
-    draw_vert_line_c(x, y, x + 2, c);
-    draw_vert_line_c(x2, y1, y2, c);
-    draw_horiz_line_c(x1, x2, y1, c);
-    draw_horiz_line_c(x1, x2, y2, c);
+public static void addSquare(TBoards b, TSquares s){
+    b.squares[b.squaresCount] = s;
+    b.squaresCount ++;
 }
 
 public static void printBoard(TBoards b){
-    gotoxy(b.x, b.y);
-    dra
+    framexyc(b.x, b.y, b.x + b.hor_length - 1, b.y + b.vert_length - 1, '#');
+}
+
+
+
+public static void startProgram(TBoards b){
+//    cursor_hide();
+    cursor_show();
+    clrscr();
+    setfgcolor(white);
+    printBoard(b);
+
+    while (true){
+        if(keypressed()){
+            String keystr = readkeystr();
+            if(keystr.equals("q")) break;
+        }
+        updateSquares(b);
+        delay(20);
+    }
+
 }
 
 
 
 void main() {
-    TSquares square1 = createSquare(yellow);
-    TSquares square2 = createSquare(red);
-    TSquares square3 = createSquare(ltgreen);
-    TSquares square4 = createSquare(ltblue);
-    TBoards board1 = createBoard(1,1, square1, square2);
+
+    TBoards board1 = createElements(TBoards.class);
+    setBoard(board1, 1, 1, createSquare(yellow), createSquare(red), createSquare(ltgreen), createSquare(ltblue));
+
+
+    startProgram(board1);
+
+
 
 }
