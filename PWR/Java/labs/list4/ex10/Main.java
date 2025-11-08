@@ -13,7 +13,10 @@ public static void draw_frame_c(int x, int y, int l, char c){
 }
 
 //add your procedures here
-int MAX_SQUARES = 200;
+final int MAX_SQUARES = 200;
+final int SPEED3 = 1;
+final int SPEED2 = 2;
+final int SPEED1 = 5;
 
 
 public static class TBoards{
@@ -23,13 +26,14 @@ public static class TBoards{
     public int vert_length = 30;
     public TSquares[] squares = new TSquares[200];
     public int squaresCount;
+    public int loopCount;
 }
 
 public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
     b.x = x;
     b.y = y;
     b.squaresCount = 0;
-
+    b.loopCount = 0;
     for(TSquares s: squares){
         addSquare(b,s);
     }
@@ -38,18 +42,22 @@ public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
 public static void updateSquares(TBoards b){
     TSquares[] s = b.squares;
     for (int i = 0; i < b.squaresCount; i++){
-        draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
+        if (b.loopCount % s[i].speed == 0){
+            draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
 
-        if(checkCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
-            randomDirection(s[i]);
+            if(checkCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
+                randomDirection(s[i]);
+            }
+
+
+            s[i].x += s[i].dx;
+            s[i].y += s[i].dy;
+            setfgcolor(s[i].color);
+            draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
         }
-
-
-        s[i].x += s[i].dx;
-        s[i].y += s[i].dy;
-        setfgcolor(s[i].color);
-        draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
     }
+    b.loopCount = (b.loopCount + 1) % 10;
+
 }
 
 public static class TSquares{
@@ -64,12 +72,13 @@ public static class TSquares{
     int loopCount;
 }
 
-public static void setSquare(TSquares s){
+public static void setSquare(TSquares s, int speed){
     s.color = (int)(Math.random() * 11 + 1);
     s.size = (int)(Math.random()*2 + 1);
     s.x = (int)(Math.random()*(120 -2- s.size) + 2 );
     s.y = (int)(Math.random()*(30 - 2 - s.size) + 2);
     s.dy = randomD(-1,1);
+    s.speed = speed;
     if(s.dy == 0) {
         int[] temp = {-1,1};
         s.dx = temp[(int)(Math.random()*2)];
@@ -83,9 +92,9 @@ public static void setSquare(TSquares s){
 
 }
 
-public static TSquares createSquare(){
+public static TSquares createSquare(int speed){
     TSquares s = new TSquares();
-    setSquare(s);
+    setSquare(s, speed);
     return s;
 }
 
@@ -174,11 +183,13 @@ void main() {
     TBoards board1 = createElements(TBoards.class);
     setBoard(board1, 1, 1);
 //
-    for (int i = 0; i < 5; i ++){
-        addSquare(board1, createSquare());
-    }
+    addSquare(board1, createSquare(SPEED3));
+    addSquare(board1, createSquare(SPEED2));
+    addSquare(board1, createSquare(SPEED1));
 
-    print(board1.squaresCount);
+
+
+//    print(board1.squaresCount);
     startProgram(board1);
 
 
