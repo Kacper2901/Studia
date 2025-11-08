@@ -39,9 +39,12 @@ public static void updateSquares(TBoards b){
     TSquares[] s = b.squares;
     for (int i = 0; i < b.squaresCount; i++){
         draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
-        while(checkCollision(s[i])) {
+
+        if(checkCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
             randomDirection(s[i]);
         }
+
+
         s[i].x += s[i].dx;
         s[i].y += s[i].dy;
         setfgcolor(s[i].color);
@@ -66,10 +69,15 @@ public static void setSquare(TSquares s){
     s.size = (int)(Math.random()*2 + 1);
     s.x = (int)(Math.random()*(120 -2- s.size) + 2 );
     s.y = (int)(Math.random()*(30 - 2 - s.size) + 2);
-    s.dy = randomD();
-    s.dx = randomD();
+    s.dy = randomD(-1,1);
+    if(s.dy == 0) {
+        int[] temp = {-1,1};
+        s.dx = temp[(int)(Math.random()*2)];
+    }
+    else{
+        s.dx = randomD(-1,1);
+    }
 
-    randomDirection(s);
     s.speed = (int)(Math.random() * 5);
     s.loopCount = 0;
 
@@ -87,45 +95,48 @@ public static void addSquare(TBoards b, TSquares s){
 
 }
 
-public static int randomD(){
-    return (int)(Math.random()*3 - 1);
+public static int randomD(int l, int r){
+    return (int)(Math.random()*(r + 1 + Math.abs(l))) - 1;
+}
+
+public static int randomValues(int length, int[] arr){
+    return arr[(int)(Math.random()*length)];
 }
 
 public static void randomDirection(TSquares s){
-        if (checkRightX(s) || checkLeftX(s)){
-            int temp = s.dx;
-            while(temp == s.dx){
-                s.dx = randomD();
-            }
-        }
+    s.dx = randomD(-1,1);
+    s.dy = randomD(-1,1);
 
-        if (checkUpY(s) || checkDownY(s)){
-            int temp = s.dy;
-            while(temp == s.dy){
-                s.dy = randomD();
-            }
+    while (checkLeftX(s) || checkRightX(s)){
+        s.dx = randomD(-1, 1);
+    }
+    if (s.dx == 0){
+        while (s.dy != 0 && (checkDownY(s) || checkUpY(s))) {
+            s.dy = randomD(-1, 1);
         }
+    }
+    else {
+        while (checkDownY(s) || checkUpY(s)) {
+            s.dy = randomD(-1, 1);
+        }
+    }
 
-        while(s.dx == 0 && s.dy == 0){
-            s.dx = randomD();
-            s.dy = randomD();
-        }
 }
 
 public static boolean checkRightX(TSquares s){
-    return (s.x + s.dx + s.size - 1 == 120);
+    return (s.x + s.dx + s.size - 1 >= 120);
 }
 
 public static boolean checkLeftX(TSquares s){
-    return (s.x + s.dx == 1);
+    return (s.x + s.dx <= 1);
 }
 
 public static boolean checkUpY(TSquares s){
-    return (s.y + s.dy == 1);
+    return (s.y + s.dy <= 1);
 }
 
 public static boolean checkDownY(TSquares s){
-    return s.y + s.dy + s.size - 1 == 30;
+    return s.y + s.dy + s.size - 1 >= 30;
 }
 
 
@@ -154,7 +165,6 @@ public static void startProgram(TBoards b){
         updateSquares(b);
         delay(20);
     }
-
 }
 
 
@@ -162,13 +172,20 @@ public static void startProgram(TBoards b){
 void main() {
 
     TBoards board1 = createElements(TBoards.class);
-    setBoard(board1, 1, 1, createSquare());
+    setBoard(board1, 1, 1);
 //
-//    for (int i = 0; i < 2; i ++){
-//        addSquare(board1, createSquare());
-//    }
+    for (int i = 0; i < 5; i ++){
+        addSquare(board1, createSquare());
+    }
 
     print(board1.squaresCount);
     startProgram(board1);
 
+
+
+//    for(int i = 0; i<20; i++){
+//        println(randomValues(2, new int[] {0,1}));
+//    }
 }
+
+
