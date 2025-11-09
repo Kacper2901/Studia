@@ -3,11 +3,6 @@ import static java.lang.IO.*;  //including package IO to be able to use simple p
 import static java.lang.IO.println;
 import static term.term.*;    //including package to be able to use simple print()
 
-
-
-
-
-
 public static void draw_frame_c(int x, int y, int l, char c){
     framexyc(x, y, x + l - 1, y + l - 1, c);
 }
@@ -45,7 +40,7 @@ public static void updateSquares(TBoards b){
         if (b.loopCount % s[i].speed == 0){
             draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
 
-            if(checkCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
+            if(boardCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
                 randomDirection(s[i]);
             }
 
@@ -87,7 +82,6 @@ public static void setSquare(TSquares s, int speed){
         s.dx = randomD(-1,1);
     }
 
-    s.speed = (int)(Math.random() * 5);
     s.loopCount = 0;
 
 }
@@ -105,7 +99,7 @@ public static void addSquare(TBoards b, TSquares s){
 }
 
 public static int randomD(int l, int r){
-    return (int)(Math.random()*(r + 1 + Math.abs(l))) - 1;
+    return (int)(Math.random()*(r + 1 + Math.abs(l))) + l;
 }
 
 public static int randomValues(int length, int[] arr){
@@ -113,23 +107,10 @@ public static int randomValues(int length, int[] arr){
 }
 
 public static void randomDirection(TSquares s){
-    s.dx = randomD(-1,1);
-    s.dy = randomD(-1,1);
-
-    while (checkLeftX(s) || checkRightX(s)){
+    while ((s.dy == 0 & s.dx == 0) || boardCollision(s)) {
         s.dx = randomD(-1, 1);
+        s.dy = randomD(-1, 1);
     }
-    if (s.dx == 0){
-        while (s.dy != 0 && (checkDownY(s) || checkUpY(s))) {
-            s.dy = randomD(-1, 1);
-        }
-    }
-    else {
-        while (checkDownY(s) || checkUpY(s)) {
-            s.dy = randomD(-1, 1);
-        }
-    }
-
 }
 
 public static boolean checkRightX(TSquares s){
@@ -148,8 +129,11 @@ public static boolean checkDownY(TSquares s){
     return s.y + s.dy + s.size - 1 >= 30;
 }
 
+//public static boolean squaresCollision(TSquares s1, TSquares s2){
+//
+//}
 
-public static boolean checkCollision(TSquares s) {
+public static boolean boardCollision(TSquares s) {
     if (checkUpY(s) || checkDownY(s) || checkLeftX(s) || checkRightX(s)) {
         return true;
     }
