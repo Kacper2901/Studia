@@ -106,8 +106,8 @@ public static void setBall(TBall ball, int color){
 }
 
 public static void addBall(TBoards board, TBall ball){
-    ball.startX = board.x + (int)((board.width - 2) / 2) + 1;
-    ball.startY = board.y + (int)((board.height - 2) / 2) + 1;
+    ball.startX = board.x + (int)(Math.round((double)((board.width) / 2)));
+    ball.startY = board.y + (int)(Math.round((double)((board.height) / 2)));
     ball.x = ball.startX;
     ball.y = ball.startY;
     board.ball = ball;
@@ -118,13 +118,18 @@ public static void resetPaddles(TPaddel paddel1, TPaddel paddel2){
     paddel1.y = paddel1.startY;;
     paddel2.x = paddel2.startX;
     paddel2.y = paddel2.startY;
+    printPaddle(paddel1, '#');
+    printPaddle(paddel2, '#');
 }
 
 public static void addPaddles(TBoards board, TPaddel paddel1, TPaddel paddel2){
-    paddel1.startX = (int)((board.width-2) * 0.2) + 1;
-    paddel2.startX = (int)((board.width-2) * 0.8) + 1;
-    paddel1.startY = (int)((board.height - 2 - paddel1.height) / 2) + 2;
-    paddel2.startY = (int)((board.height - 2 - paddel2.height) / 2) + 2;
+    int offsetX =(int)(board.width * 0.2);
+    int offsetY =(int)((board.height - paddel1.height)/2);
+
+    paddel1.startX = board.x + offsetX;
+    paddel2.startX = board.x + board.width - offsetX - paddel2.width;
+    paddel1.startY = board.y + offsetY;
+    paddel2.startY = board.y + board.height - offsetY - paddel2.height;
     resetPaddles(paddel1, paddel2);
 
     board.leftPaddel = paddel1;
@@ -197,7 +202,7 @@ public static void updatePaddle(TPaddel paddel){
 }
 
 public static boolean paddleBoardCollision(TPaddel paddel, TBoards board){
-    if (paddel.y == 1 || paddel.y == board.height){
+    if (paddel.y - 1 <= 1 || paddel.y +1 >= board.height){
         return true;
     }
     return false;
@@ -211,7 +216,7 @@ public static boolean ballBounceCollision(TBoards board){
 }
 
 public static boolean ballPaddle1Collision(TPaddel paddel1, TBall ball){
-    return (ball.x == paddel1.x + paddel1.width - 1 && ball.y >= paddel1.dy + paddel1.y && ball.y <= paddel1.dy + paddel1.y + paddel1.height - 1);
+    return (ball.x + ball.dx == paddel1.x + paddel1.width - 1 && ball.y + ball.dy >= paddel1.dy + paddel1.y && ball.y + ball.dy <= paddel1.dy + paddel1.y + paddel1.height - 1);
 }
 
 public static boolean ballPaddle2Collision(TPaddel paddel2, TBall ball){
@@ -219,7 +224,7 @@ public static boolean ballPaddle2Collision(TPaddel paddel2, TBall ball){
 }
 
 public static void printScore(TBoards board){
-    gotoxy(59,1);
+    gotoxy((int)((board.x + board.width - 2)/2), board.y);
     setfgcolor(red);
     println(board.player1.score + ":" + board.player2.score);
     setfgcolor(white);
@@ -227,6 +232,7 @@ public static void printScore(TBoards board){
 
 
 public static void game(){
+    cursor_hide();
     clrscr();
     TBoards board = createElements(TBoards.class);
     setBoard(board, 1,1,121,31,white, createGame());
@@ -246,6 +252,8 @@ public static void game(){
     }
 
     while(true){
+        board.player1.paddel.dy = 0;
+        board.player2.paddel.dy = 0;
         if (board.game.loopsWithoutMovement > 2) {
             board.player1.paddel.isMovingDown = false;
             board.player1.paddel.isMovingUp = false;
@@ -254,35 +262,31 @@ public static void game(){
         }
         if(keypressed()){
             String keystr = readkeystr();
-            if(keystr.equals("w") && board.player1.paddel.y - 1 > board.y){
+            if(keystr.equals("w") && board.player1.paddel.y - 1 >= board.y + 1){
                 board.player1.paddel.dy = -1;
-                board.player1.paddel.y += board.player1.paddel.dy;
                 board.player1.paddel.isMovingUp = true;
                 board.player1.paddel.isMovingDown = false;
                 board.game.loopsWithoutMovement = 0;
                 updatePaddle(board.player1.paddel);
 
             }
-            if(keystr.equals("s") && board.player1.paddel.y + board.player1.paddel.height - 1 < board.y + 1){
+            if(keystr.equals("s") && board.player1.paddel.y + board.player1.paddel.height <= board.y + board.height - 2){
                 board.player1.paddel.dy = 1;
-                board.player1.paddel.y += board.player1.paddel.dy;
                 board.player1.paddel.isMovingUp = false;
                 board.player1.paddel.isMovingDown = true;
                 board.game.loopsWithoutMovement = 0;
                 updatePaddle(board.player1.paddel);
 
             }
-            if(keystr.equals("i") && board.player2.paddel.y - 1 > board.y){
+            if(keystr.equals("i") && board.player2.paddel.y - 1 >= board.y + 1){
                 board.player2.paddel.dy = -1;
-                board.player2.paddel.y += board.player2.paddel.dy;
                 board.player2.paddel.isMovingUp = true;
                 board.player2.paddel.isMovingDown = false;
                 board.game.loopsWithoutMovement = 0;
                 updatePaddle(board.player2.paddel);
             }
-            if(keystr.equals("k") && board.player2.paddel.y + 1 < board.y - board.leftPaddel.height + 1){
+            if(keystr.equals("k") && board.player2.paddel.y + board.player2.paddel.height <= board.y + board.height - 2){
                 board.player2.paddel.dy = 1;
-                board.player2.paddel.y += board.player2.paddel.dy;
                 board.player2.paddel.isMovingUp = false;
                 board.player2.paddel.isMovingDown = true;
                 board.game.loopsWithoutMovement = 0;
@@ -340,8 +344,6 @@ public static void game(){
                 continue;
             }
             updateBall(board.ball);
-            board.x += board.ball.dx;
-            board.ball.y += board.ball.dy;
         }
         board.game.loopCount = (board.game.loopCount + 1) % 10;
     }
@@ -362,6 +364,7 @@ public static void game(){
     System.out.print(" won " + board.player1.score + ":" + board.player2.score + "!");
     gotoxy(200,200);
     readkeystr();
+    cursor_show();
 }
 
 void main(){
