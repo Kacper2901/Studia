@@ -78,7 +78,6 @@ public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
     for(TSquares s: squares){
         addSquare(b,s);
     }
-    b.activeSquares = b.loopCount;
 }
 
 public static void updateSquares(TBoards b){
@@ -94,6 +93,7 @@ public static void updateSquares(TBoards b){
                 b.activeSquares --;
                 if(s[i].size == 1) b.player.score += 4;
                 if(s[i].size == 2) b.player.score += 1;
+                printScore(b);
             }
             if (b.loopCount % s[i].speed == 0) {
                 draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
@@ -160,6 +160,7 @@ public static TSquares createSquare(int speed){
 public static void addSquare(TBoards b, TSquares s){
     b.squares[b.squaresCount] = s;
     b.squaresCount ++;
+    b.activeSquares ++;
 }
 
 public static int randomD(int l, int r){
@@ -259,13 +260,34 @@ public static void printBoard(TBoards b){
     updatePlayer(b.player);
 }
 
+public static void printScore(TBoards board){
+    gotoxy((int)((board.x + board.hor_length)/2) - 5, board.y);
+    setfgcolor(yellow);
+
+    if (board.player.score < 10) System.out.print("SCORE: 00" + board.player.score);
+    else if (board.player.score < 100) System.out.print("SCORE: 0" + board.player.score);
+    else System.out.print("SCORE: " + board.player.score);
+}
+
 public static void startProgram(TBoards b){
     cursor_hide();
     clrscr();
     setfgcolor(white);
     printBoard(b);
+    printScore(b);
 
     while (true){
+        if(b.activeSquares == 0) {
+            clrscr();
+            setfgcolor(white);
+            framexyc(50, 20, 61, 22, '*');
+            gotoxy(51,21);
+            setfgcolor(yellow);
+            System.out.print(" YOU WON!");
+            gotoxy(200,200);
+            readkey();
+            return;
+        }
         if(keypressed()){
             String keystr = readkeystr();
             if(keystr.equals("q")) break;
