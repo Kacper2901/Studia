@@ -22,11 +22,15 @@ public static class TBoards{
     public int loopCount;
     public TPlayer player;
     public int activeSquares;
+    public int time;
+
 }
 
+
+
 public static class TGame{
-    public int time;
     public TBoards board;
+
 }
 
 public static class TPlayer{
@@ -67,7 +71,6 @@ public static TGame createGame(TBoards board){
 
 public static void setGame(TGame game, TBoards board){
     game.board = board;
-    game.time = 60;
 }
 
 public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
@@ -75,6 +78,8 @@ public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
     b.y = y;
     b.squaresCount = 0;
     b.loopCount = 0;
+    b.time = 60;
+
     for(TSquares s: squares){
         addSquare(b,s);
     }
@@ -102,7 +107,7 @@ public static void updateSquares(TBoards b){
                 }
 
                 for (int j = 0; j < b.squaresCount; j++) {
-                    if (squaresCollision(s[i], s[j]) && i != j) {
+                    if (squaresCollision(s[i], s[j]) && i != j && s[i].isActive && s[j].isActive) {
                         randomDirection(s[i], s[j]);
                         randomDirection(s[j], s[i]);
                     }
@@ -260,8 +265,19 @@ public static void printBoard(TBoards b){
     updatePlayer(b.player);
 }
 
+public static void printTime(TBoards b){
+    gotoxy((int)((b.x + b.hor_length)/2) - 5 - 8, b.y);
+    setfgcolor(red);
+    if(b.time >= 10){
+        println("TIME: " + b.time);
+    }
+    else{
+        println("TIME: 0" + b.time);
+    }
+}
+
 public static void printScore(TBoards board){
-    gotoxy((int)((board.x + board.hor_length)/2) - 5, board.y);
+    gotoxy((int)((board.x + board.hor_length)/2) + 5, board.y);
     setfgcolor(yellow);
 
     if (board.player.score < 10) System.out.print("SCORE: 00" + board.player.score);
@@ -276,7 +292,30 @@ public static void startProgram(TBoards b){
     printBoard(b);
     printScore(b);
 
+    Timer timer = new Timer();
+    TimerTask timerTask = new TimerTask() {
+        @Override
+        public void run() {
+            b.time --;
+        }
+    };
+
+    timer.schedule(timerTask, 1000,1000);
+
+
     while (true){
+        printTime(b);
+        if(b.time <= 0 && b.activeSquares > 0){
+            clrscr();
+            setfgcolor(white);
+            framexyc(50, 20, 62, 22, '*');
+            gotoxy(51,21);
+            setfgcolor(red);
+            System.out.print(" GAME OVER ");
+            delay(4000);
+            clrscr();
+            break;
+        }
         if(b.activeSquares == 0) {
             clrscr();
             setfgcolor(white);
@@ -284,9 +323,9 @@ public static void startProgram(TBoards b){
             gotoxy(51,21);
             setfgcolor(yellow);
             System.out.print(" YOU WON!");
-            gotoxy(200,200);
-            readkey();
-            return;
+            delay(4000);
+            clrscr();
+            break;
         }
         if(keypressed()){
             String keystr = readkeystr();
@@ -313,8 +352,6 @@ public static void startProgram(TBoards b){
             }
         }
 
-
-
         updateSquares(b);
         delay(20);
     }
@@ -328,6 +365,9 @@ void main() {
     addSquare(board1, createSquare(SPEED3));
     addSquare(board1, createSquare(SPEED1));
     addSquare(board1, createSquare(SPEED2));
+    addSquare(board1, createSquare(SPEED3));
+    addSquare(board1, createSquare(SPEED3));
+    addSquare(board1, createSquare(SPEED3));
     addSquare(board1, createSquare(SPEED3));
 
 
