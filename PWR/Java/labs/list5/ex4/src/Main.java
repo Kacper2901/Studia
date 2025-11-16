@@ -20,7 +20,8 @@ public static class TGame {
     public TSquares[] squares = new TSquares[MAX_SQUARES];
     public int squaresCount;
     public int loopCount;
-    public TPlayer player;
+    public TPlayer[] players = new TPlayer[4];
+    public int playerCount;
     public int activeSquares;
     public int time;
 }
@@ -31,6 +32,7 @@ public static void setGame(TGame game, int x, int y, TSquares... squares) {
     game.squaresCount = 0;
     game.loopCount = 0;
     game.time = 60;
+    game.playerCount = 0;
 
     for(TSquares s: squares){
         addSquare(game,s);
@@ -55,15 +57,15 @@ public static class TPlayer{
     public int score;
 }
 
-public static TPlayer createPlayer(){
+public static TPlayer createPlayer(int color){
     TPlayer player = new TPlayer();
-    setPlayer(player);
+    setPlayer(player, color);
     return player;
 }
 
-public static void setPlayer(TPlayer player){
+public static void setPlayer(TPlayer player, int color){
     player.size = 3;
-    player.color = green;
+    player.color = color;
     player.dx = 0;
     player.dy = 0;
     player.score = 0;
@@ -72,7 +74,8 @@ public static void setPlayer(TPlayer player){
 public static void addPlayer(TGame game, TPlayer player){
     player.x = (int)((game.x + game.hor_length)/2);
     player.y = (int)((game.y + game.vert_length)/2);
-    game.player = player;
+    game.players[game.playerCount] = player;
+    game.playerCount ++;
 }
 
 public static void updatePlayer(TPlayer player){
@@ -80,7 +83,14 @@ public static void updatePlayer(TPlayer player){
     framexyc(player.x, player.y, player.x + player.size - 1, player.y + player.size - 1, ' ');
     player.x += player.dx;
     player.y += player.dy;
-    framexyc(player.x, player.y, player.x + player.size - 1, player.y + player.size - 1, '#');
+}
+
+public static void printPlayer(TGame game){
+    for(int i = 0; i < game.playerCount; i++){
+        TPlayer player = game.players[i];
+        setfgcolor(player.color);
+        framexyc(player.x, player.y, player.x + player.size - 1, player.y + player.size - 1, '#');
+    }
 }
 
 public static boolean playerSquareCollision(TPlayer player, TSquares square){
@@ -140,19 +150,8 @@ public static void updateSquares(TGame game){
 
     for (int i = 0; i < game.squaresCount; i++) {
         if (s[i].isActive) {
-            if(playerSquareCollision(game.player, s[i])){
-                s[i].isActive = false;
-                draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
-                setfgcolor(game.player.color);
-                draw_frame_c(game.player.x, game.player.y, game.player.size,'#');
-                game.activeSquares --;
-                if(s[i].size == 1) game.player.score += 4;
-                if(s[i].size == 2) game.player.score += 1;
-                printScore(game);
-            }
             if (game.loopCount % s[i].speed == 0) {
-                draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
-                if (boardCollision(game, s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
+                if (boardCollision(game, s[i]) || ((s[i].dx == 0 && s[i].dy == 0))) {
                     randomDirection(game, s[i]);
                 }
 
@@ -162,6 +161,8 @@ public static void updateSquares(TGame game){
                         randomDirection(game, s[j], s[i]);
                     }
                 }
+                draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
+
 
                 if(s[i].isActive){
                     s[i].x += s[i].dx;
@@ -172,7 +173,24 @@ public static void updateSquares(TGame game){
             }
         }
     }
-    game.loopCount = (game.loopCount + 1) % 10;
+}
+
+public static void updatePlayerPoints(TGame game){
+    TSquares[] s = game.squares;
+
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (s[i].isActive) {
+            for (int j = 0; j < game.playerCount; j++){
+                if(playerSquareCollision(game.players[j], s[i])){
+                    s[i].isActive = false;
+                    draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
+                    game.activeSquares --;
+                    if(s[i].size == 1) game.players[j].score += 4;
+                    if(s[i].size == 2) game.players[j].score += 1;
+                }
+            }
+        }
+    }
 }
 
 public static boolean squaresCollision(TSquares s1, TSquares s2){
@@ -225,53 +243,125 @@ public static boolean checkDownY(TGame game, TSquares s){
 }
 
 public static boolean checkRightX(TGame game, TPlayer p){
-    return (p.x + p.dx + p.size - 1 < 120 + game.x - 1);
+    return (p.x + p.dx + p.size  < 120 + game.x - 1);
 }
 
 public static boolean checkLeftX(TGame game, TPlayer p){
-    return (p.x + p.dx > 1 + game.x - 1);
+    return (p.x + p.dx > 1 + game.x);
 }
 
 public static boolean checkUpY(TGame game, TPlayer p){
-    return (p.y + p.dy > 1 + game.y - 1);
+    return (p.y + p.dy > 1 + game.y);
 }
 
 public static boolean checkDownY(TGame game, TPlayer p){
-    return p.y + p.dy + p.size - 1 < 30 +game.y - 1;
+    return p.y + p.dy + p.size  < 30 +game.y - 1;
 }
 
-public static void MODEL(TGame game, String key){
-    if(key.equals("q")) ;
-    if(key.equals("w")){
-        game.player.dy = -1;
-        game.player.dx = 0;
-        if(checkUpY(game, game.player)) updatePlayer(game.player);
+public static boolean MODEL(TGame game, int x_coor, int y_coor,TPlayer player, boolean flag){
+    if(!flag) return false;
+    player.dy = 0;
+    player.dx = 0;
+    if(x_coor == -1 && checkLeftX(game, player)) {
+        player.dx = x_coor;
+        player.dy = 0;
     }
-    if (key.equals("s")){
-        game.player.dy = 1;
-        game.player.dx = 0;
-        if(checkDownY(game, game.player)) updatePlayer(game.player);
+    if(x_coor == 1 && checkRightX(game, player)) {
+        player.dx = x_coor;
+        player.dy = 0;
     }
-    if(key.equals("a")){
-        game.player.dy = 0;
-        game.player.dx = -1;
-        if(checkLeftX(game, game.player)) updatePlayer(game.player);
+    if(y_coor == -1 && checkUpY(game, player)){
+        player.dy = y_coor;
+        player.dx = 0;
     }
-    if(key.equals("d")){
-        game.player.dy = 0;
-        game.player.dx = 1;
-        if(checkRightX(game, game.player)) updatePlayer(game.player);
+    if(y_coor == 1 && checkDownY(game, player)) {
+        player.dy = y_coor;
+        player.dx = 0;
     }
+    if(y_coor == 0 && x_coor == 0){
+        player.dy = 0;
+        player.dx = 0;
+    }
+
+    updatePlayer(player);
+    updatePlayerPoints(game);
     updateSquares(game);
+    game.loopCount = (game.loopCount + 1) % 10;
+    VIEW(game);
+    return true;
 }
 
-public static String CONTROLLER(TGame game) {
-    String keystr = "";
-    if(keypressed()){
-        keystr = readkeystr();
-        
+public static void VIEW(TGame game){
+    TSquares[] s = game.squares;
+
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (s[i].isActive) {
+            setfgcolor(s[i].color);
+            draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
+        }
     }
-    return keystr;
+    printPlayer(game);
+    printScore(game);
+    printTime(game);
+}
+
+public static boolean CONTROLLER(TGame game) {
+    int x_corr = 0;
+    int y_corr = 0;
+    TPlayer player = game.players[0];
+    boolean flag = true;
+    String key = "";
+    if(!keypressed()) {
+        y_corr = 0;
+        x_corr = 0;
+    }
+    else{
+        key = readkeystr();
+        if(key.equals("q")) flag = false;
+        else if(key.equals("w")){
+            y_corr = -1;
+            x_corr = 0;
+            player = game.players[0];
+        }
+        if (key.equals("s")){
+            y_corr = 1;
+            x_corr = 0;
+            player = game.players[0];
+        }
+        if(key.equals("a")){
+            y_corr = 0;
+            x_corr = -1;
+            player = game.players[0];
+        }
+        if(key.equals("d")) {
+            y_corr = 0;
+            x_corr = 1;
+            player = game.players[0];
+        }
+        if(key.equals("i")){
+            y_corr = -1;
+            x_corr = 0;
+            player = game.players[1];
+        }
+        if (key.equals("k")){
+            y_corr = 1;
+            x_corr = 0;
+            player = game.players[1];
+        }
+        if(key.equals("j")){
+            y_corr = 0;
+            x_corr = -1;
+            player = game.players[1];
+        }
+        if(key.equals("l")) {
+            y_corr = 0;
+            x_corr = 1;
+            player = game.players[1];
+        }
+
+    }
+    return MODEL(game,x_corr, y_corr, player, flag);
+
 }
 
 public static void setTimer(TGame game){
@@ -288,8 +378,9 @@ public static void setTimer(TGame game){
 
 public static void printBoard(TGame game){
     framexyc(game.x, game.y, game.x + game.hor_length - 1, game.y + game.vert_length - 1, '#');
-    updatePlayer(game.player);
-
+    for(int i = 0; i < game.playerCount; i++){
+        updatePlayer(game.players[i]);
+    }
 }
 
 public static void printTime(TGame game){
@@ -304,12 +395,13 @@ public static void printTime(TGame game){
 }
 
 public static void printScore(TGame game){
-    gotoxy((int)((game.x + game.hor_length)/2) + 5, game.y);
-    setfgcolor(yellow);
-
-    if (game.player.score < 10) System.out.print("SCORE: 00" + game.player.score);
-    else if (game.player.score < 100) System.out.print("SCORE: 0" + game.player.score);
-    else System.out.print("SCORE: " + game.player.score);
+    for (int i = 0; i < game.playerCount; i++){
+        gotoxy(game.x + 121, game.y + i);
+        setfgcolor(game.players[i].color);
+        if (game.players[i].score < 10) System.out.print("Player" + i + " SCORE: 00" + game.players[i].score);
+        else if (game.players[i].score < 100) System.out.print(" SCORE: 0" + game.players[i].score);
+        else System.out.print("Player" + i + " SCORE: " + game.players[i].score);
+    }
 }
 
 
@@ -319,11 +411,10 @@ public static void startProgram(TGame game){
     setfgcolor(white);
     printBoard(game);
     printScore(game);
-
     setTimer(game);
 
     while (true){
-        printTime(game);
+
         if(game.time <= 0 && game.activeSquares > 0){
             clrscr();
             setfgcolor(white);
@@ -337,17 +428,24 @@ public static void startProgram(TGame game){
         }
         if(game.activeSquares == 0) {
             clrscr();
+            int winnerPoints = 0;
+            String winner = "";
+            for(int i = 0; i < game.playerCount; i++){
+                if(game.players[i].score > winnerPoints) winner = "Player" + i;
+                winnerPoints = game.players[i].score;
+            }
             setfgcolor(white);
-            framexyc(50, 20, 61, 22, '*');
-            gotoxy(51,21);
+            framexyc(50, 20, 70, 22, '*');
+            gotoxy(54,21);
             setfgcolor(yellow);
-            System.out.print(" YOU WON!");
+            System.out.print(winner + " WON!");
+
             delay(4000);
             clrscr();
             break;
         }
 
-        if (!controlPlayers(game)){
+        if(!CONTROLLER(game)){
             clrscr();
             setfgcolor(white);
             framexyc(44, 20, 63, 22, '*');
@@ -359,7 +457,6 @@ public static void startProgram(TGame game){
             break;
         }
 
-        updateSquares(game);
         delay(20);
     }
 }
@@ -368,7 +465,8 @@ void main() {
 
     TGame game = createElements(TGame.class);
     setGame(game, 5,5 );
-    addPlayer(game, createPlayer());
+    addPlayer(game, createPlayer(blue));
+    addPlayer(game, createPlayer(red));
     addSquare(game, createSquare(game,SPEED3));
     addSquare(game, createSquare(game,SPEED2));
     addSquare(game, createSquare(game,SPEED2));
