@@ -6,31 +6,23 @@ public static void draw_frame_c(int x, int y, int l, char c){
 }
 
 //add your procedures here
-final int MAX_SQUARES = 200;
+public static final int MAX_SQUARES = 200;
 final int SPEED3 = 1;
 final int SPEED2 = 2;
 final int SPEED1 = 5;
 
 
-public static class TBoards{
+public static class TGame {
     public int x;
     public int y;
     public int hor_length = 120;
     public int vert_length = 30;
-    public TSquares[] squares = new TSquares[200];
+    public TSquares[] squares = new TSquares[MAX_SQUARES];
     public int squaresCount;
     public int loopCount;
     public TPlayer player;
     public int activeSquares;
     public int time;
-
-}
-
-
-
-public static class TGame{
-    public TBoards board;
-
 }
 
 public static class TPlayer{
@@ -57,59 +49,50 @@ public static void setPlayer(TPlayer player){
     player.score = 0;
 }
 
-public static void addPlayer(TBoards board, TPlayer player){
-    player.x = (int)((board.x + board.hor_length)/2);
-    player.y = (int)((board.y + board.vert_length)/2);
-    board.player = player;
+public static void addPlayer(TGame game, TPlayer player){
+    player.x = (int)((game.x + game.hor_length)/2);
+    player.y = (int)((game.y + game.vert_length)/2);
+    game.player = player;
 }
 
-public static TGame createGame(TBoards board){
-    TGame game = new TGame();
-    setGame(game, board);
-    return game;
-}
 
-public static void setGame(TGame game, TBoards board){
-    game.board = board;
-}
-
-public static void setBoard(TBoards b, int x, int y, TSquares... squares) {
-    b.x = x;
-    b.y = y;
-    b.squaresCount = 0;
-    b.loopCount = 0;
-    b.time = 60;
+public static void setBoard(TGame game, int x, int y, TSquares... squares) {
+    game.x = x;
+    game.y = y;
+    game.squaresCount = 0;
+    game.loopCount = 0;
+    game.time = 60;
 
     for(TSquares s: squares){
-        addSquare(b,s);
+        addSquare(game,s);
     }
 }
 
-public static void updateSquares(TBoards b){
-    TSquares[] s = b.squares;
+public static void updateSquares(TGame game){
+    TSquares[] s = game.squares;
 
-    for (int i = 0; i < b.squaresCount; i++) {
+    for (int i = 0; i < game.squaresCount; i++) {
         if (s[i].isActive) {
-            if(playerSquareCollision(b.player, s[i])){
+            if(playerSquareCollision(game.player, s[i])){
                 s[i].isActive = false;
                 draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
-                setfgcolor(b.player.color);
-                draw_frame_c(b.player.x, b.player.y, b.player.size,'#');
-                b.activeSquares --;
-                if(s[i].size == 1) b.player.score += 4;
-                if(s[i].size == 2) b.player.score += 1;
-                printScore(b);
+                setfgcolor(game.player.color);
+                draw_frame_c(game.player.x, game.player.y, game.player.size,'#');
+                game.activeSquares --;
+                if(s[i].size == 1) game.player.score += 4;
+                if(s[i].size == 2) game.player.score += 1;
+                printScore(game);
             }
-            if (b.loopCount % s[i].speed == 0) {
+            if (game.loopCount % s[i].speed == 0) {
                 draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
-                if (boardCollision(s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
-                    randomDirection(s[i]);
+                if (boardCollision(game, s[i]) || (s[i].dx == 0 && s[i].dy == 0)) {
+                    randomDirection(game, s[i]);
                 }
 
-                for (int j = 0; j < b.squaresCount; j++) {
+                for (int j = 0; j < game.squaresCount; j++) {
                     if (squaresCollision(s[i], s[j]) && i != j && s[i].isActive && s[j].isActive) {
-                        randomDirection(s[i], s[j]);
-                        randomDirection(s[j], s[i]);
+                        randomDirection(game, s[i], s[j]);
+                        randomDirection(game, s[j], s[i]);
                     }
                 }
 
@@ -122,7 +105,7 @@ public static void updateSquares(TBoards b){
             }
         }
     }
-    b.loopCount = (b.loopCount + 1) % 10;
+    game.loopCount = (game.loopCount + 1) % 10;
 }
 
 public static class TSquares{
@@ -138,11 +121,11 @@ public static class TSquares{
     boolean isActive;
 }
 
-public static void setSquare(TSquares s, int speed){
+public static void setSquare(TGame game, TSquares s, int speed){
     s.color = (int)(Math.random() * 11 + 1);
     s.size = (int)(Math.random()*2 + 1);
-    s.x = (int)(Math.random()*(120 -2- s.size) + 2 );
-    s.y = (int)(Math.random()*(30 - 2 - s.size) + 2);
+    s.x = (int)(Math.random()*117) + game.x + 1;
+    s.y = (int)(Math.random()*27) + game.y + 1;
     s.dy = randomD(-1,1);
     s.speed = speed;
     s.isActive = true;
@@ -156,16 +139,16 @@ public static void setSquare(TSquares s, int speed){
     s.loopCount = 0;
 }
 
-public static TSquares createSquare(int speed){
+public static TSquares createSquare(TGame game, int speed){
     TSquares s = new TSquares();
-    setSquare(s, speed);
+    setSquare(game, s, speed);
     return s;
 }
 
-public static void addSquare(TBoards b, TSquares s){
-    b.squares[b.squaresCount] = s;
-    b.squaresCount ++;
-    b.activeSquares ++;
+public static void addSquare(TGame game, TSquares s){
+    game.squares[game.squaresCount] = s;
+    game.squaresCount ++;
+    game.activeSquares ++;
 }
 
 public static int randomD(int l, int r){
@@ -176,15 +159,15 @@ public static int randomValues(int length, int[] arr){
     return arr[(int)(Math.random()*length)];
 }
 
-public static void randomDirection(TSquares s){
-    while ((s.dy == 0 & s.dx == 0) || boardCollision(s)) {
+public static void randomDirection(TGame game, TSquares s){
+    while ((s.dy == 0 & s.dx == 0) || boardCollision(game, s)) {
         s.dx = randomD(-1, 1);
         s.dy = randomD(-1, 1);
     }
 }
 
-public static void randomDirection(TSquares s1, TSquares s2 ){
-    while ((s1.dy == 0 & s1.dx == 0) || boardCollision(s1)|| boardCollision(s2) || squaresCollision(s1, s2)) {
+public static void randomDirection(TGame game, TSquares s1, TSquares s2 ){
+    while ((s1.dy == 0 & s1.dx == 0) || boardCollision(game, s1)|| boardCollision(game, s2) || squaresCollision(s1, s2)) {
         s1.dx = randomD(-1, 1);
         s1.dy = randomD(-1, 1);
         s2.dx = randomD(-1,1);
@@ -192,36 +175,36 @@ public static void randomDirection(TSquares s1, TSquares s2 ){
     }
 }
 
-public static boolean checkRightX(TSquares s){
-    return (s.x + s.dx + s.size - 1 >= 120);
+public static boolean checkRightX(TGame game,TSquares s){
+    return (s.x + s.dx + s.size - 1 >= game.x - 1 + 120);
 }
 
-public static boolean checkLeftX(TSquares s){
-    return (s.x + s.dx <= 1);
+public static boolean checkLeftX(TGame game, TSquares s){
+    return (s.x + s.dx <= 1 + game.x - 1);
 }
 
-public static boolean checkUpY(TSquares s){
-    return (s.y + s.dy <= 1);
+public static boolean checkUpY(TGame game, TSquares s){
+    return (s.y + s.dy <= 1 + game.y - 1);
 }
 
-public static boolean checkDownY(TSquares s){
-    return s.y + s.dy + s.size - 1 >= 30;
+public static boolean checkDownY(TGame game, TSquares s){
+    return s.y + s.dy + s.size - 1 >= 30 + game.y - 1;
 }
 
-public static boolean checkRightX(TPlayer p){
-    return (p.x + p.dx + p.size - 1 < 120);
+public static boolean checkRightX(TGame game, TPlayer p){
+    return (p.x + p.dx + p.size - 1 < 120 + game.x - 1);
 }
 
-public static boolean checkLeftX(TPlayer p){
-    return (p.x + p.dx > 1);
+public static boolean checkLeftX(TGame game, TPlayer p){
+    return (p.x + p.dx > 1 + game.x - 1);
 }
 
-public static boolean checkUpY(TPlayer p){
-    return (p.y + p.dy > 1);
+public static boolean checkUpY(TGame game, TPlayer p){
+    return (p.y + p.dy > 1 + game.y - 1);
 }
 
-public static boolean checkDownY(TPlayer p){
-    return p.y + p.dy + p.size - 1 < 30;
+public static boolean checkDownY(TGame game, TPlayer p){
+    return p.y + p.dy + p.size - 1 < 30 +game.y - 1;
 }
 
 public static void updatePlayer(TPlayer player){
@@ -239,13 +222,6 @@ public static boolean squaresCollision(TSquares s1, TSquares s2){
             s2.y + s2.size - 1 + s2.dy < s1.y + s1.dy);
 }
 
-public static boolean boardCollision(TPlayer p) {
-    if (checkUpY(p) || checkDownY(p) || checkLeftX(p) || checkRightX(p)) {
-        return true;
-    }
-    return false;
-}
-
 public static boolean playerSquareCollision(TPlayer player, TSquares square){
     return (((player.x + player.dx + player.size - 1 >= square.x + square.dx &&
             player.x + player.dx <= square.x + square.dx + square.size - 1) &&
@@ -253,59 +229,58 @@ public static boolean playerSquareCollision(TPlayer player, TSquares square){
             player.y + player.dy <= square.y + square.dy + square.size - 1)));
 }
 
-public static boolean boardCollision(TSquares s) {
-    if (checkUpY(s) || checkDownY(s) || checkLeftX(s) || checkRightX(s)) {
+public static boolean boardCollision(TGame game, TSquares s) {
+    if (checkUpY(game, s) || checkDownY(game, s) || checkLeftX(game, s) || checkRightX(game, s)) {
         return true;
     }
     return false;
 }
 
-public static void printBoard(TBoards b){
-    framexyc(b.x, b.y, b.x + b.hor_length - 1, b.y + b.vert_length - 1, '#');
-    updatePlayer(b.player);
+public static void printBoard(TGame game){
+    framexyc(game.x, game.y, game.x + game.hor_length - 1, game.y + game.vert_length - 1, '#');
+    updatePlayer(game.player);
 }
 
-public static void printTime(TBoards b){
-    gotoxy((int)((b.x + b.hor_length)/2) - 5 - 8, b.y);
+public static void printTime(TGame game){
+    gotoxy((int)((game.x + game.hor_length)/2) - 5 - 8, game.y);
     setfgcolor(red);
-    if(b.time >= 10){
-        println("TIME: " + b.time);
+    if(game.time >= 10){
+        println("TIME: " + game.time);
     }
     else{
-        println("TIME: 0" + b.time);
+        println("TIME: 0" + game.time);
     }
 }
 
-public static void printScore(TBoards board){
-    gotoxy((int)((board.x + board.hor_length)/2) + 5, board.y);
+public static void printScore(TGame game){
+    gotoxy((int)((game.x + game.hor_length)/2) + 5, game.y);
     setfgcolor(yellow);
 
-    if (board.player.score < 10) System.out.print("SCORE: 00" + board.player.score);
-    else if (board.player.score < 100) System.out.print("SCORE: 0" + board.player.score);
-    else System.out.print("SCORE: " + board.player.score);
+    if (game.player.score < 10) System.out.print("SCORE: 00" + game.player.score);
+    else if (game.player.score < 100) System.out.print("SCORE: 0" + game.player.score);
+    else System.out.print("SCORE: " + game.player.score);
 }
 
-public static void startProgram(TBoards b){
+public static void startProgram(TGame game){
     cursor_hide();
     clrscr();
     setfgcolor(white);
-    printBoard(b);
-    printScore(b);
+    printBoard(game);
+    printScore(game);
 
     Timer timer = new Timer();
     TimerTask timerTask = new TimerTask() {
         @Override
         public void run() {
-            b.time --;
+            game.time --;
         }
     };
 
     timer.schedule(timerTask, 1000,1000);
 
-
     while (true){
-        printTime(b);
-        if(b.time <= 0 && b.activeSquares > 0){
+        printTime(game);
+        if(game.time <= 0 && game.activeSquares > 0){
             clrscr();
             setfgcolor(white);
             framexyc(50, 20, 62, 22, '*');
@@ -316,7 +291,7 @@ public static void startProgram(TBoards b){
             clrscr();
             break;
         }
-        if(b.activeSquares == 0) {
+        if(game.activeSquares == 0) {
             clrscr();
             setfgcolor(white);
             framexyc(50, 20, 61, 22, '*');
@@ -331,45 +306,45 @@ public static void startProgram(TBoards b){
             String keystr = readkeystr();
             if(keystr.equals("q")) break;
             if(keystr.equals("w")){
-                b.player.dy = -1;
-                b.player.dx = 0;
-                if(checkUpY(b.player)) updatePlayer(b.player);
+                game.player.dy = -1;
+                game.player.dx = 0;
+                if(checkUpY(game, game.player)) updatePlayer(game.player);
             }
             if (keystr.equals("s")){
-                b.player.dy = 1;
-                b.player.dx = 0;
-                if(checkDownY(b.player)) updatePlayer(b.player);
+                game.player.dy = 1;
+                game.player.dx = 0;
+                if(checkDownY(game, game.player)) updatePlayer(game.player);
             }
             if(keystr.equals("a")){
-                b.player.dy = 0;
-                b.player.dx = -1;
-                if(checkLeftX(b.player)) updatePlayer(b.player);
+                game.player.dy = 0;
+                game.player.dx = -1;
+                if(checkLeftX(game, game.player)) updatePlayer(game.player);
             }
             if(keystr.equals("d")){
-                b.player.dy = 0;
-                b.player.dx = 1;
-                if(checkRightX(b.player)) updatePlayer(b.player);
+                game.player.dy = 0;
+                game.player.dx = 1;
+                if(checkRightX(game, game.player)) updatePlayer(game.player);
             }
         }
 
-        updateSquares(b);
+        updateSquares(game);
         delay(20);
     }
 }
 
 void main() {
 
-    TBoards board1 = createElements(TBoards.class);
-    setBoard(board1, 1, 1);
-    addPlayer(board1, createPlayer());
-    addSquare(board1, createSquare(SPEED3));
-    addSquare(board1, createSquare(SPEED1));
-    addSquare(board1, createSquare(SPEED2));
-    addSquare(board1, createSquare(SPEED3));
-    addSquare(board1, createSquare(SPEED3));
-    addSquare(board1, createSquare(SPEED3));
-    addSquare(board1, createSquare(SPEED3));
+    TGame game = createElements(TGame.class);
+    setBoard(game, 5,5 );
+    addPlayer(game, createPlayer());
+    addSquare(game, createSquare(game,SPEED3));
+    addSquare(game, createSquare(game,SPEED2));
+    addSquare(game, createSquare(game,SPEED2));
+    addSquare(game, createSquare(game,SPEED3));
+    addSquare(game, createSquare(game,SPEED1));
+    addSquare(game, createSquare(game,SPEED1));
 
 
-    startProgram(board1);
+
+    startProgram(game);
 }
