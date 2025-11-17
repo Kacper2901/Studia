@@ -56,15 +56,16 @@ public static class TPlayer{
     public int dy;
     public int color;
     public int score;
+    public int hz;
 }
 
-public static TPlayer createPlayer(int color, int x, int y){
+public static TPlayer createPlayer(int color, int x, int y, int hz){
     TPlayer player = new TPlayer();
-    setPlayer(player, color, x, y);
+    setPlayer(player, color, x, y, hz);
     return player;
 }
 
-public static void setPlayer(TPlayer player, int color, int x, int y){
+public static void setPlayer(TPlayer player, int color, int x, int y, int hz){
     player.size = 3;
     player.color = color;
     player.dx = 0;
@@ -72,6 +73,7 @@ public static void setPlayer(TPlayer player, int color, int x, int y){
     player.score = 0;
     player.x = x;
     player.y = y;
+    player.hz = hz;
 }
 
 public static void addPlayer(TGame game, TPlayer player){
@@ -186,6 +188,7 @@ public static void updatePlayerPoints(TGame game){
                     s[i].isActive = false;
                     draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
                     game.activeSquares --;
+                    sound(game.players[j].hz, 20);
                     if(s[i].size == 1) game.players[j].score += 4;
                     if(s[i].size == 2) game.players[j].score += 1;
                 }
@@ -230,16 +233,23 @@ public static boolean hitPlayers(TPlayer p1, TPlayer p2){
     return (p1.x + p1.size + p1. dx - 1 >= p2.x && p1.x + p1.dx <= p2.x + p2.size - 1 && p1.y + p1.dy + p1.size - 1 >= p2.y && p1.y + p1.dy <= p2.y + p2.size - 1); //from right
 }
 
+public static boolean hitAnyPlayer(TPlayer p, TGame game){
+    for (int i = 0; i < game.playerCount; i++){
+        if(hitPlayers(p, game.players[i]) && p != game.players[i]) return true;
+    }
+    return false;
+}
+
 public static boolean checkRightX(TGame game,TSquares s){
     return (s.x + s.dx + s.size - 1 >= game.x - 1 + 120);
 }
 
 public static boolean checkLeftX(TGame game, TSquares s){
-    return (s.x + s.dx <= 1 + game.x - 1);
+    return (s.x + s.dx <= game.x);
 }
 
 public static boolean checkUpY(TGame game, TSquares s){
-    return (s.y + s.dy <= 1 + game.y - 1);
+    return (s.y + s.dy <= game.y);
 }
 
 public static boolean checkDownY(TGame game, TSquares s){
@@ -251,7 +261,7 @@ public static boolean pHitRight(TGame game, TPlayer p){
 }
 
 public static boolean pHitLeft(TGame game, TPlayer p){
-    return (p.x + p.dx <= 1 + game.x);
+    return (p.x + p.dx <= game.x);
 }
 
 public static boolean pHitUp(TGame game, TPlayer p){
@@ -266,34 +276,18 @@ public static boolean MODEL(TGame game, int x_coor, int y_coor,TPlayer player, b
     if(!flag) return false;
     player.dy = y_coor;
     player.dx = x_coor;
-    if (!hitPlayers(player, game.players[1]) || player == game.players[1]){
-        if(!pHitRight(game, player) && !pHitLeft(game, player) && !pHitUp(game, player) && !pHitDown(game, player)) {
-            updatePlayer(player);
 
+    if (!hitAnyPlayer(player, game)) {
+        if (!pHitRight(game, player) && !pHitLeft(game, player) && !pHitUp(game, player) && !pHitDown(game, player)) {
+            updatePlayer(player);
         }
-//        if(x_coor == 1 && !pHitRight(game, player)) {
-//            updatePlayer(player);
-//
-//        }
-//        if(y_coor == -1 && !pHitUp(game, player)){
-//            updatePlayer(player);
-//
-//        }
-//        if(y_coor == 1 && !pHitDown(game, player)) {
-//            updatePlayer(player);
-//
-//        }
     }
     else {
-        sound(400, 50);
-        player.dy = 0;
-        player.dx = 0;
+        sound(400, 20);
     }
 
     player.dx = 0;
     player.dy = 0;
-
-
 
     updatePlayerPoints(game);
     updateSquares(game);
@@ -411,7 +405,7 @@ public static void printScore(TGame game){
         setfgcolor(game.players[i].color);
         if (game.players[i].score < 10) System.out.print("Player" + i + " SCORE: 00" + game.players[i].score);
         else if (game.players[i].score < 100) System.out.print(" SCORE: 0" + game.players[i].score);
-        else System.out.print("Player" + i + " SCORE: " + game.players[i].score);
+        else System.out.print("Player" + i + 1 + " SCORE: " + game.players[i].score);
     }
 }
 
@@ -442,7 +436,7 @@ public static void startProgram(TGame game){
             int winnerPoints = 0;
             String winner = "";
             for(int i = 0; i < game.playerCount; i++){
-                if(game.players[i].score > winnerPoints) winner = "Player" + i;
+                if(game.players[i].score > winnerPoints) winner = "Player" + i + 1;
                 winnerPoints = game.players[i].score;
             }
             setfgcolor(white);
@@ -476,8 +470,8 @@ void main() {
 
     TGame game = createElements(TGame.class);
     setGame(game, 5,5 );
-    addPlayer(game, createPlayer(blue, game.x + 1, game.y + 26));
-    addPlayer(game, createPlayer(red, game.x + 116, game.y + 26));
+    addPlayer(game, createPlayer(blue, game.x + 1, game.y + 26, 600));
+    addPlayer(game, createPlayer(red, game.x + 116, game.y + 26, 800));
     addSquare(game, createSquare(game,SPEED3));
     addSquare(game, createSquare(game,SPEED2));
     addSquare(game, createSquare(game,SPEED2));
