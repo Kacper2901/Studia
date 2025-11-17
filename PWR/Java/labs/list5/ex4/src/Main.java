@@ -1,3 +1,4 @@
+
 import static java.lang.IO.println;
 import static term.term.*;    //including package to be able to use simple print()
 
@@ -200,20 +201,6 @@ public static boolean squaresCollision(TSquares s1, TSquares s2){
             s2.y + s2.size - 1 + s2.dy < s1.y + s1.dy);
 }
 
-public static boolean playerCOLISSION(TPlayer p1, TPlayer p2, int dx, int dy){
-    return (((p1.x + 1 + p1.size - 1 >= p2.x &&
-            p1.x -1 <= p2.x + p2.size - 1) &&
-            (p1.y + 1 + p1.size - 1 >= p2.y &&
-                    p1.y - 1 <= p2.y + p2.size - 1)));
-}
-
-public static boolean collisionAllPlayers(TPlayer player, TGame game, int dx, int dy){
-    for (int i = 0; i < game.playerCount; i++){
-        if (playerCOLISSION(player, game.players[i], dx, dy) && game.players[i] != player) return true;
-    }
-    return false;
-}
-
 
 public static int randomD(int l, int r){
     return (int)(Math.random()*(r + 1 + Math.abs(l))) + l;
@@ -239,72 +226,75 @@ public static void randomDirection(TGame game, TSquares s1, TSquares s2 ){
     }
 }
 
+public static boolean hitPlayers(TPlayer p1, TPlayer p2){
+    return (p1.x + p1.size + p1. dx - 1 >= p2.x && p1.x + p1.dx <= p2.x + p2.size - 1 && p1.y + p1.dy + p1.size - 1 >= p2.y && p1.y + p1.dy <= p2.y + p2.size - 1); //from right
+}
 
 public static boolean checkRightX(TGame game,TSquares s){
-    return (s.x + 1 + s.size - 1 >= game.x - 1 + 120);
+    return (s.x + s.dx + s.size - 1 >= game.x - 1 + 120);
 }
 
 public static boolean checkLeftX(TGame game, TSquares s){
-    return (s.x - 1 <= 1 + game.x - 1);
+    return (s.x + s.dx <= 1 + game.x - 1);
 }
 
 public static boolean checkUpY(TGame game, TSquares s){
-    return (s.y - 1 <= 1 + game.y - 1);
+    return (s.y + s.dy <= 1 + game.y - 1);
 }
 
 public static boolean checkDownY(TGame game, TSquares s){
-    return s.y + 1 + s.size - 1 >= 30 + game.y - 1;
+    return s.y + s.dy + s.size - 1 >= 30 + game.y - 1;
 }
 
-public static boolean checkRightX(TGame game, TPlayer p){
-    return (p.x + 1 + p.size  < 120 + game.x - 1);
+public static boolean pHitRight(TGame game, TPlayer p){
+    return (p.x + p.dx + p.size - 1  >= 120 + game.x - 1);
 }
 
-public static boolean checkLeftX(TGame game, TPlayer p){
-    return (p.x - 1 > 1 + game.x);
+public static boolean pHitLeft(TGame game, TPlayer p){
+    return (p.x + p.dx <= 1 + game.x);
 }
 
-public static boolean checkUpY(TGame game, TPlayer p){
-    return (p.y - 1 > 1 + game.y);
+public static boolean pHitUp(TGame game, TPlayer p){
+    return (p.y + p.dy <= game.y);
 }
 
-public static boolean checkDownY(TGame game, TPlayer p){
-    return p.y + 1 + p.size  < 30 +game.y - 1;
+public static boolean pHitDown(TGame game, TPlayer p){
+    return p.y + p.dy + p.size - 1 >= 30 + game.y - 1;
 }
 
-
-
-public static boolean MODEL(TGame game, int x_coor, int y_coor, TPlayer player, boolean flag){
+public static boolean MODEL(TGame game, int x_coor, int y_coor,TPlayer player, boolean flag){
     if(!flag) return false;
-    player.dy = 0;
+    player.dy = y_coor;
+    player.dx = x_coor;
+    if (!hitPlayers(player, game.players[1]) || player == game.players[1]){
+        if(!pHitRight(game, player) && !pHitLeft(game, player) && !pHitUp(game, player) && !pHitDown(game, player)) {
+            updatePlayer(player);
+
+        }
+//        if(x_coor == 1 && !pHitRight(game, player)) {
+//            updatePlayer(player);
+//
+//        }
+//        if(y_coor == -1 && !pHitUp(game, player)){
+//            updatePlayer(player);
+//
+//        }
+//        if(y_coor == 1 && !pHitDown(game, player)) {
+//            updatePlayer(player);
+//
+//        }
+    }
+    else {
+        sound(400, 50);
+        player.dy = 0;
+        player.dx = 0;
+    }
+
     player.dx = 0;
-    if(x_coor == -1 && checkLeftX(game, player) && !collisionAllPlayers(player, game, -1, 0)) {
-        player.dx = x_coor;
-        player.dy = 0;
-    }
-
-    if(x_coor == 1 && checkRightX(game, player) && !collisionAllPlayers(player, game, 1, 0)) {
-        player.dx = x_coor;
-        player.dy = 0;
-    }
-
-    if(y_coor == -1 && checkUpY(game, player) && !collisionAllPlayers(player, game, 0, -1)){
-        player.dy = y_coor;
-        player.dx = 0;
-    }
-
-    if(y_coor == 1 && checkDownY(game, player) && !collisionAllPlayers(player, game, 0, 1)) {
-        player.dy = y_coor;
-        player.dx = 0;
-    }
-
-    if(y_coor == 0 && x_coor == 0){
-        player.dy = 0;
-        player.dx = 0;
-    }
+    player.dy = 0;
 
 
-    updatePlayer(player);
+
     updatePlayerPoints(game);
     updateSquares(game);
     game.loopCount = (game.loopCount + 1) % 10;
