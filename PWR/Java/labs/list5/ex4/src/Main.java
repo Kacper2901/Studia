@@ -57,23 +57,23 @@ public static class TPlayer{
     public int score;
 }
 
-public static TPlayer createPlayer(int color){
+public static TPlayer createPlayer(int color, int x, int y){
     TPlayer player = new TPlayer();
-    setPlayer(player, color);
+    setPlayer(player, color, x, y);
     return player;
 }
 
-public static void setPlayer(TPlayer player, int color){
+public static void setPlayer(TPlayer player, int color, int x, int y){
     player.size = 3;
     player.color = color;
     player.dx = 0;
     player.dy = 0;
     player.score = 0;
+    player.x = x;
+    player.y = y;
 }
 
 public static void addPlayer(TGame game, TPlayer player){
-    player.x = (int)((game.x + game.hor_length)/2);
-    player.y = (int)((game.y + game.vert_length)/2);
     game.players[game.playerCount] = player;
     game.playerCount ++;
 }
@@ -200,6 +200,20 @@ public static boolean squaresCollision(TSquares s1, TSquares s2){
             s2.y + s2.size - 1 + s2.dy < s1.y + s1.dy);
 }
 
+public static boolean playerCOLISSION(TPlayer p1, TPlayer p2, int dx, int dy){
+    return (((p1.x + 1 + p1.size - 1 >= p2.x &&
+            p1.x -1 <= p2.x + p2.size - 1) &&
+            (p1.y + 1 + p1.size - 1 >= p2.y &&
+                    p1.y - 1 <= p2.y + p2.size - 1)));
+}
+
+public static boolean collisionAllPlayers(TPlayer player, TGame game, int dx, int dy){
+    for (int i = 0; i < game.playerCount; i++){
+        if (playerCOLISSION(player, game.players[i], dx, dy) && game.players[i] != player) return true;
+    }
+    return false;
+}
+
 
 public static int randomD(int l, int r){
     return (int)(Math.random()*(r + 1 + Math.abs(l))) + l;
@@ -227,61 +241,68 @@ public static void randomDirection(TGame game, TSquares s1, TSquares s2 ){
 
 
 public static boolean checkRightX(TGame game,TSquares s){
-    return (s.x + s.dx + s.size - 1 >= game.x - 1 + 120);
+    return (s.x + 1 + s.size - 1 >= game.x - 1 + 120);
 }
 
 public static boolean checkLeftX(TGame game, TSquares s){
-    return (s.x + s.dx <= 1 + game.x - 1);
+    return (s.x - 1 <= 1 + game.x - 1);
 }
 
 public static boolean checkUpY(TGame game, TSquares s){
-    return (s.y + s.dy <= 1 + game.y - 1);
+    return (s.y - 1 <= 1 + game.y - 1);
 }
 
 public static boolean checkDownY(TGame game, TSquares s){
-    return s.y + s.dy + s.size - 1 >= 30 + game.y - 1;
+    return s.y + 1 + s.size - 1 >= 30 + game.y - 1;
 }
 
 public static boolean checkRightX(TGame game, TPlayer p){
-    return (p.x + p.dx + p.size  < 120 + game.x - 1);
+    return (p.x + 1 + p.size  < 120 + game.x - 1);
 }
 
 public static boolean checkLeftX(TGame game, TPlayer p){
-    return (p.x + p.dx > 1 + game.x);
+    return (p.x - 1 > 1 + game.x);
 }
 
 public static boolean checkUpY(TGame game, TPlayer p){
-    return (p.y + p.dy > 1 + game.y);
+    return (p.y - 1 > 1 + game.y);
 }
 
 public static boolean checkDownY(TGame game, TPlayer p){
-    return p.y + p.dy + p.size  < 30 +game.y - 1;
+    return p.y + 1 + p.size  < 30 +game.y - 1;
 }
 
-public static boolean MODEL(TGame game, int x_coor, int y_coor,TPlayer player, boolean flag){
+
+
+public static boolean MODEL(TGame game, int x_coor, int y_coor, TPlayer player, boolean flag){
     if(!flag) return false;
     player.dy = 0;
     player.dx = 0;
-    if(x_coor == -1 && checkLeftX(game, player)) {
+    if(x_coor == -1 && checkLeftX(game, player) && !collisionAllPlayers(player, game, -1, 0)) {
         player.dx = x_coor;
         player.dy = 0;
     }
-    if(x_coor == 1 && checkRightX(game, player)) {
+
+    if(x_coor == 1 && checkRightX(game, player) && !collisionAllPlayers(player, game, 1, 0)) {
         player.dx = x_coor;
         player.dy = 0;
     }
-    if(y_coor == -1 && checkUpY(game, player)){
+
+    if(y_coor == -1 && checkUpY(game, player) && !collisionAllPlayers(player, game, 0, -1)){
         player.dy = y_coor;
         player.dx = 0;
     }
-    if(y_coor == 1 && checkDownY(game, player)) {
+
+    if(y_coor == 1 && checkDownY(game, player) && !collisionAllPlayers(player, game, 0, 1)) {
         player.dy = y_coor;
         player.dx = 0;
     }
+
     if(y_coor == 0 && x_coor == 0){
         player.dy = 0;
         player.dx = 0;
     }
+
 
     updatePlayer(player);
     updatePlayerPoints(game);
@@ -465,8 +486,8 @@ void main() {
 
     TGame game = createElements(TGame.class);
     setGame(game, 5,5 );
-    addPlayer(game, createPlayer(blue));
-    addPlayer(game, createPlayer(red));
+    addPlayer(game, createPlayer(blue, game.x + 1, game.y + 26));
+    addPlayer(game, createPlayer(red, game.x + 116, game.y + 26));
     addSquare(game, createSquare(game,SPEED3));
     addSquare(game, createSquare(game,SPEED2));
     addSquare(game, createSquare(game,SPEED2));
