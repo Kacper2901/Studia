@@ -24,7 +24,7 @@ public void setPath(TPath path) {
     path.pointsCount = 0;
 }
 
-public TPoint createPoint(int x, int y) {
+public TPoint point(int x, int y) {
     TPoint point = new TPoint();
     setPoint(point, x, y);
     return point;
@@ -43,7 +43,7 @@ public void printPath(TPath path){
     print("]");
 }
 
-public void appendPoint(TPoint point, TPath path) {
+public void appendPoint(TPoint point, TPath path){
     path.points[path.pointsCount] = point;
     path.pointsCount++;
 }
@@ -117,9 +117,9 @@ public void appendSegmentToPath(TPoint a, TPoint b, TPath path){
         int tempX = a.x + dx;
         int tempY = a.y + dy;
 
-        if(!lastPointEqualSegmentStart(a, path)) appendPoint(a, path);
+        if(path.pointsCount == 0 || !lastPointEqualSegmentStart(a, path)) appendPoint(a, path);
         while (tempX != b.x || tempY != b.y){
-            appendPoint(createPoint(tempX, tempY), path);
+            appendPoint(point(tempX, tempY), path);
             if (tempX != b.x) tempX += dx;
             if (tempY != b.y) tempY += dy;
         }
@@ -127,33 +127,33 @@ public void appendSegmentToPath(TPoint a, TPoint b, TPath path){
     }
 }
 
-public void appendSections(TPath path, )
+public void addSectionsToPath(TPath path, TPoint... points){
+    for(int i = 0; i < points.length - 1; i++){
+        if (segmentValid(points[i], points[i + 1])) appendSegmentToPath(points[i], points[i + 1], path);
+        else appendPoint(points[i], path);
+    }
+    TPoint lastGivenPoint = points[points.length - 1];
+    TPoint lastPathPoint = path.points[path.pointsCount - 1];
+    if(!pointsEqual(lastPathPoint, lastGivenPoint)) appendPoint(lastGivenPoint, path);
+
+}
 
 
 void main() {
+    clrscr();
     TPath path = createElements(TPath.class);
 
     setPath(path);
-    appendPoint(createPoint(5,5), path);
-    appendPoint(createPoint(5,6), path);
-    appendPoint(createPoint(5,7), path);
-    appendPoint(createPoint(6,7), path);
-    appendPoint(createPoint(7,7), path);
+//    appendPoint(point(5,5), path);
+//    appendPoint(point(5,6), path);
+//    appendPoint(point(5,7), path);
+//    appendPoint(point(6,7), path);
+//    appendPoint(point(7,7), path);
 
-    printPath(path);
     println("");
-    delay(2000);
     setfgcolor(green);
-    appendSegmentToPath(createPoint(8,8), createPoint(14, 8),path);
-    printPath(path);
-    println("");
-    appendSegmentToPath(createPoint(14,8), createPoint(5,8), path);
-    printPath(path);
-    println("");
-    appendSegmentToPath(createPoint(5,7), createPoint(5,5), path);
-    printPath(path);
-    appendSegmentToPath(createPoint(4,4), createPoint(8,7), path);
+    addSectionsToPath(path, point(1,11), point(7,5), point(10,5)); //creates a path in the shape of \__
 
-
-
+    drawPath(path, '#');
+    gotoxy(1,20);
 }
