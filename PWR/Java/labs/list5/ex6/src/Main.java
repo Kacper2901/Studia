@@ -135,15 +135,33 @@ public void addSectionsToPath(TPath path, TPoint... points){
     TPoint lastGivenPoint = points[points.length - 1];
     TPoint lastPathPoint = path.points[path.pointsCount - 1];
     if(!pointsEqual(lastPathPoint, lastGivenPoint)) appendPoint(lastGivenPoint, path);
+}
 
+void addPaths(TPath p1, TPath p2){
+    if(p2.pointsCount == 0) return;
+    if(p1.pointsCount == 0) p1 = p2;
+    TPoint firstP1 = p1.points[0];
+    TPoint lastP1 = p1.points[p1.pointsCount - 1];
+    TPoint firstP2 = p2.points[0];
+    TPoint lastP2 = p2.points[p2.pointsCount - 1];
+
+    if(firstP2 != lastP1) appendPoint(firstP2, p1);
+
+    for(int i = 1; i < p2.pointsCount - 1; i++){
+        appendPoint(p2.points[i], p1);
+    }
+
+    if(firstP1 != lastP2) appendPoint(lastP2, p1);
 }
 
 
 void main() {
     clrscr();
-    TPath path = createElements(TPath.class);
+    TPath path1 = createElements(TPath.class);
+    TPath path2 = createElements(TPath.class);
 
-    setPath(path);
+    setPath(path1);
+    setPath(path2);
 //    appendPoint(point(5,5), path);
 //    appendPoint(point(5,6), path);
 //    appendPoint(point(5,7), path);
@@ -152,8 +170,14 @@ void main() {
 
     println("");
     setfgcolor(green);
-    addSectionsToPath(path, point(1,11), point(7,5), point(10,5)); //creates a path in the shape of \__
-
-    drawPath(path, '#');
+    addSectionsToPath(path1, point(1,1), point(10,1), point(10,10)); //creates a path in a form of rectangle
+    drawPath(path1, '#');
+    addSectionsToPath(path2, point(1,10), point(1,1));
+    clrscr();
+    drawPath(path2, '#');
+    addPaths(path1, path2);
+    clrscr();
+    delay(500);
+    drawPath(path1, '#');
     gotoxy(1,20);
 }
