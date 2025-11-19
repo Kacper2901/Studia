@@ -119,6 +119,14 @@ public int getDy(TPoint a, TPoint b){
     else return 0;
 }
 
+String sliceString(String text, int leftIdx, int rigthIdx){
+    String newText = "";
+    for (int i = 0; i < text.length(); i ++){
+        if(i >= leftIdx && i <= rigthIdx) newText += text.charAt(i);
+    }
+    return newText;
+}
+
 public void appendSegmentToPath(TPoint a, TPoint b, TPath path){
     if (segmentValid(a,b)){
         int dx = getDx(a, b);
@@ -171,178 +179,87 @@ String reverseString(String text){
     return reversedText;
 }
 
-void writeStringForwards(TPath path, String text, int startIndex, char c){
-    int pointsAfterStartId = (path.pointsCount - 1) - startIndex;
-    int carryCharCount = text.length() - (pointsAfterStartId + 1);
-    int currCharIndex = 0;
-    for(int i = 0; i < path.pointsCount; i++){
-        if(i >= startIndex && currCharIndex < text.length()){
-            drawPoint(path.points[i], text.charAt(currCharIndex));
-            currCharIndex++;
+void writeForwards(String text, TPath path, int i){
+    int numPrintedChars = 0;
+    if(path.wrapAround == 1) {
+        if (i < 0) i = (i % path.pointsCount) + path.pointsCount;
+        if (i > path.pointsCount) i %= path.pointsCount;
+        while (numPrintedChars < text.length()){
+            drawPoint(path.points[i % path.pointsCount], text.charAt(numPrintedChars));
+            numPrintedChars++;
+            i++;
         }
-        else drawPoint(path.points[i], c);
     }
-    if (path.wrapAround == 1){
-        int i = 0;
-        while(carryCharCount > 0){
-            if(i < startIndex){
-                drawPoint(path.points[i], text.charAt(currCharIndex));
-                currCharIndex++;
-            }
-            carryCharCount--;
+    if(path.wrapAround == 0){
+        if(i < 0){
+            text = sliceString(text, Math.abs(i), text.length() - 1);
+            i = 0;
+        }
+        if(i > path.pointsCount) text = "";
+        while(numPrintedChars < text.length() && i < path.pointsCount){
+            drawPoint(path.points[i], text.charAt(numPrintedChars));
+            numPrintedChars++;
             i++;
         }
     }
 }
 
-String sliceString(String text, int leftIdx, int rigthIdx){
-    String newText = "";
-    for (int i = 0; i < text.length(); i ++){
-        if(i >= leftIdx && i <= rigthIdx) newText += text.charAt(i);
-    }
-    return newText;
-}
-
-void writeStringBackwards(TPath path, String text, int startIndex, char c){
-    int pointsBeforeStartId = startIndex;
-    int carryCharCount = text.length() - (pointsBeforeStartId + 1);
-    int currCharIndex = 0;
-    for(int i = path.pointsCount - 1; i >= 0; i--){
-        if(i <= startIndex && currCharIndex < text.length()){
-            drawPoint(path.points[i], text.charAt(currCharIndex));
-            currCharIndex++;
+void writeBackwards(String text, TPath path, int i){
+    int numPrintedChars = 0;
+    if(path.wrapAround == 1){
+        if (i < 0) i = (i % path.pointsCount) + path.pointsCount;
+        if (i > path.pointsCount) i %= path.pointsCount;
+        while (numPrintedChars < text.length()){
+            drawPoint(path.points[(i % path.pointsCount + path.pointsCount)%path.pointsCount], text.charAt(numPrintedChars));
+            numPrintedChars++;
+            i--;
         }
-        else drawPoint(path.points[i], c);
     }
-    if (path.wrapAround == 1){
-        int i = path.pointsCount - 1;
-        while(carryCharCount > 0){
-            if(i > startIndex){
-                drawPoint(path.points[i], text.charAt(currCharIndex));
-                currCharIndex++;
-            }
-            carryCharCount --;
+    if(path.wrapAround == 0){
+        if(i < 0) text = "";
+        if(i > path.pointsCount) {
+            text = sliceString(text, 0,Math.abs(i));
+            i = path.pointsCount - 1;
+        }
+        while(numPrintedChars < text.length()){
+            if(i > 0 && i < path.pointsCount)
+                drawPoint(path.points[i], text.charAt(numPrintedChars));
+            numPrintedChars++;
             i--;
         }
     }
 }
 
-int correctStartIndex(TPath path, int startIndex){
-    if(startIndex < 0 || startIndex >= path.pointsCount) {
-        startIndex %= path.pointsCount;
-        if(startIndex < 0) startIndex += path.pointsCount;
+void writeStringOnPath(String text, TPath path, int i){
+    if(path.printDirection == 0){
+        writeForwards(text,path,i);
     }
-    return startIndex;
-}
-
-String cutString(TPath path, String text, int startIndex){
-    int howManyCut;
-    int pathLastIdx = path.pointsCount - 1;
-    if(startIndex < 0){
-        if(path.printDirection == 1) return "";
-        howManyCut = Math.abs(startIndex);
-        text = sliceString(text, howManyCut, text.length() - 1);
-
-    }
-    else if(startIndex > pathLastIdx){
-        if(path.printDirection == 0) return "";
-        text = reverseString(text);
-        howManyCut = startIndex - pathLastIdx;
-        text = sliceString(text, 0, pathLastIdx - howManyCut);
-        text = reverseString(text);
-    }
-    return text;
-}
-
-void writeStringOnPath(TPath path, String text, int startIndex, char c) {
-    if(path.wrapAround == 1) startIndex = correctStartIndex(path, startIndex);
-    if(path.wrapAround == 0){
-        text = cutString(path, text, startIndex);
-        if(startIndex < 0) startIndex = 0;
-    }
-
-    if (path.printDirection == 0) {
-        writeStringForwards(path, text, startIndex, c);
-    }
-    if (path.printDirection == 1){
-        writeStringBackwards(path, text, startIndex, c);
+    if(path.printDirection == 1){
+        writeBackwards(text,path,i);
     }
 }
 
 
-void writeStringBackwardsOffset(TPath path, String text, int startIndex, char c, TPoint offset){
-    int pointsBeforeStartId = startIndex;
-    int carryCharCount = text.length() - (pointsBeforeStartId + 1);
-    int currCharIndex = 0;
-    TPoint offsetPoint;
-
-    for(int i = path.pointsCount - 1; i >= 0; i--){
-        offsetPoint = point(path.points[i].x + offset.x, path.points[i].y + offset.y);
-        if(i <= startIndex && currCharIndex < text.length()){
-            drawPoint(offsetPoint, text.charAt(currCharIndex));
-            currCharIndex++;
-        }
-//        else drawPoint(offsetPoint, c);
-    }
-    if (path.wrapAround == 1){
-        int i = path.pointsCount - 1;
-        while(carryCharCount > 0){
-            if(i > startIndex){
-                offsetPoint = point(path.points[i].x + offset.x, path.points[i].y + offset.y);
-                drawPoint(offsetPoint, text.charAt(currCharIndex));
-                currCharIndex++;
-            }
-            carryCharCount --;
-            i--;
-        }
-    }
+boolean hitStrings(int s1_first, int s1_last, int s2_first, int s2_last){
+    return (Math.abs(s1_first - s2_first) < 2 || Math.abs(s1_last - s2_last) < 2) || Math.abs(s1_first - s1_last) < 2 || Math.abs(s1_first - s2_last) < 2;
 }
 
-void writeStringOnPathOffset(TPath path, String text, int startIndex, char c, TPoint offset) {
-    if(path.wrapAround == 1) startIndex = correctStartIndex(path, startIndex);
-    if(path.wrapAround == 0){
-        text = cutString(path, text, startIndex);
-        if(startIndex < 0) startIndex = 0;
-    }
-
-    if (path.printDirection == 0) {
-        writeStringForwardsOffset(path, text, startIndex, c, offset);
-    }
-    if (path.printDirection == 1){
-        writeStringBackwardsOffset(path, text, startIndex, c, offset);
-    }
+void updateSmallFrame(TPath path, int bee1Idx, int bee2Idx){
+    String text1 = "*Bee ready!";
+    writeStringOnPath(text1, path, bee1Idx);
+    writeStringOnPath(text1, path, bee2Idx);
 }
 
 
-void writeStringForwardsOffset(TPath path, String text, int startIndex, char c, TPoint offset){
-    int pointsAfterStartId = (path.pointsCount - 1) - startIndex;
-    int carryCharCount = text.length() - (pointsAfterStartId + 1);
-    int currCharIndex = 0;
-    TPoint offsetPoint;
-    for(int i = 0; i < path.pointsCount; i++){
-        offsetPoint = point(path.points[i].x + offset.x, path.points[i].y + offset.y);
-        if(i >= startIndex && currCharIndex < text.length()){
-            drawPoint(offsetPoint, text.charAt(currCharIndex));
-            currCharIndex++;
-        }
-//        else drawPoint(path.points[i], c);
-    }
-    if (path.wrapAround == 1){
-        int i = 0;
-        while(carryCharCount > 0){
-            if(i < startIndex){
-                offsetPoint = point(path.points[i].x + offset.x, path.points[i].y + offset.y);
-                drawPoint(path.points[i], text.charAt(currCharIndex));
-                currCharIndex++;
-            }
-            carryCharCount--;
-            i++;
-        }
-    }
-}
 
-void updateBigFrame(TPath path, String text, char c){
-    setfgcolor(yellow);
+void updateBigFrame(TPath path, int startIdx, int welcomeIdx, String welcome, String start){
+
+
+    path.printDirection = (path.printDirection + 1) % 2;
+    writeStringOnPath(welcome, path,welcomeIdx);
+    path.printDirection = (path.printDirection + 1) % 2;
+    writeStringOnPath(start, path,startIdx);
+
 
 }
 
@@ -357,28 +274,85 @@ void main() {
     path1.idxText1 = 0;
     path1.idxText1 = path1.pointsCount / 2;
 
-    String text1 = "Bee ready!";
+    String welcomeClock = "*>>Welcome to our game!<<";
+    String welcomeAntiClock = ">>Welcome to our game!<<*";
+    String startAntiClock = "*>>Press s to start<<";
+    String startClock = ">>Press s to start<<*";
+
+    String currWelcome = welcomeAntiClock;
+    String currStart = startClock;
 
 
-    addSectionsToPath(path1, point(3,3), point(122,3), point(122, 48), point(3,48), point(3,3));
-    addSectionsToPath(path2, point(52,17), point(72,17), point(72, 32), point(52,32), point(52,17));
+    addSectionsToPath(path1, point(1, 1), point(120, 1), point(120, 30), point(1, 30), point(1, 1));
+    addSectionsToPath(path2, point(50, 7), point(70, 7), point(70, 22), point(50, 22), point(50, 7));
     setfgcolor(yellow);
-    drawPath(path1, '#');
+    drawPath(path1, '*');
     setfgcolor(green);
-    drawPath(path2, '#');
+    drawPath(path2, '*');
+
+    path1.wrapAround = 1;
+    path1.printDirection = 0;
+    path2.wrapAround = 1;
+    int currBeeIdx = 0;
+
+    int currWelcomeIdx = (120 - 24) / 2;
+    int lastWelcomeIdx = currWelcomeIdx + 24;
+    int currStartIdx = 270 - currWelcomeIdx + 1;
+    int lastStartIdx = currStartIdx - 20;
+
+    int welcomeDirection = -1;
+    int startDirection = 1;
+    path1.printDirection = 1;
+    int flag = 0;
 
 
+    while (true){
+        if (flag == 0) {
+            setfgcolor(green);
+            updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.pointsCount / 2);
+            setfgcolor(yellow);
+            updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeAntiClock, startClock);
+        }
+        else{
+            setfgcolor(green);
+            updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.pointsCount / 2);
+            setfgcolor(yellow);
+            updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeClock, startAntiClock);
+        }
+
+        delay(50);
+        currBeeIdx++;
+        if(hitStrings(currStartIdx, lastStartIdx, currWelcomeIdx, lastWelcomeIdx)){
+
+            if (flag == 0) {
+                setfgcolor(green);
+                updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.pointsCount / 2);
+                setfgcolor(yellow);
+                updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeClock, startAntiClock);
+            }
+            else{
+                setfgcolor(green);
+                updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.pointsCount / 2);
+                setfgcolor(yellow);
+                updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeAntiClock, startClock);
+            }
+            flag = (flag + 1)%2;
+            startDirection*=-1;
+            welcomeDirection*=-1;
 
 
+        }
+        delay(50);
+        currStartIdx = (((currStartIdx + startDirection) % path1.pointsCount) +path1.pointsCount) % path1.pointsCount;
+        currWelcomeIdx = (((currWelcomeIdx + welcomeDirection) % path1.pointsCount) +path1.pointsCount) % path1.pointsCount;
+        lastWelcomeIdx = (((lastWelcomeIdx + welcomeDirection) % path1.pointsCount) +path1.pointsCount) % path1.pointsCount;
+        lastStartIdx = (((lastStartIdx + startDirection) % path1.pointsCount) +path1.pointsCount) % path1.pointsCount;
 
-    println("");
-//    setfgcolor(green);
-
-
-
-
-
-
-    gotoxy(1,20);
-
+    }
 }
+
+
+
+
+
+
