@@ -10,6 +10,8 @@ final int MAX_POINTS = 2000;
 public static class TPath {
     TPoint[] points;
     int pointsCount;
+    int printDirection;
+    int wrapAround;
 }
 
 
@@ -162,7 +164,7 @@ String reverseString(String text){
     return reversedText;
 }
 
-void writeStringForwards(TPath path, String text, int startIndex, char c, int wrap){
+void writeStringForwards(TPath path, String text, int startIndex, char c){
     int pointsAfterStartId = (path.pointsCount - 1) - startIndex;
     int carryCharCount = text.length() - (pointsAfterStartId + 1);
     int currCharIndex = 0;
@@ -173,7 +175,7 @@ void writeStringForwards(TPath path, String text, int startIndex, char c, int wr
         }
         else drawPoint(path.points[i], c);
     }
-    if (wrap == 1){
+    if (path.wrapAround == 1){
         int i = 0;
         while(carryCharCount > 0){
             if(i < startIndex){
@@ -186,7 +188,15 @@ void writeStringForwards(TPath path, String text, int startIndex, char c, int wr
     }
 }
 
-void writeStringBackwards(TPath path, String text, int startIndex, char c, int wrap){
+String sliceString(String text, int leftIdx, int rigthIdx){
+    String newText = "";
+    for (int i = 0; i < text.length(); i ++){
+        if(i >= leftIdx && i <= rigthIdx) newText += text.charAt(i);
+    }
+    return newText;
+}
+
+void writeStringBackwards(TPath path, String text, int startIndex, char c){
     int pointsBeforeStartId = startIndex;
     int carryCharCount = text.length() - (pointsBeforeStartId + 1);
     int currCharIndex = 0;
@@ -197,7 +207,7 @@ void writeStringBackwards(TPath path, String text, int startIndex, char c, int w
         }
         else drawPoint(path.points[i], c);
     }
-    if (wrap == 1){
+    if (path.wrapAround == 1){
         int i = path.pointsCount - 1;
         while(carryCharCount > 0){
             if(i > startIndex){
@@ -210,15 +220,49 @@ void writeStringBackwards(TPath path, String text, int startIndex, char c, int w
     }
 }
 
-
-void writeStringOnPath(TPath path, String text, int startIndex, char c, int reverse, int wrap) {
-    if (reverse == 0) {
-        writeStringForwards(path, text, startIndex, c, wrap);
+int correctStartIndex(TPath path, int startIndex){
+    if(startIndex < 0 || startIndex >= path.pointsCount) {
+        startIndex %= path.pointsCount;
+        if(startIndex < 0) startIndex += path.pointsCount;
     }
-    if (reverse == 1){
-        writeStringBackwards(path, text, startIndex, c, wrap);
+    return startIndex;
+}
+
+String cutString(TPath path, String text, int startIndex){
+    int howManyCut;
+    int pathLastIdx = path.pointsCount - 1;
+    if(startIndex < 0){
+        if(path.printDirection == 1) return "";
+        howManyCut = Math.abs(startIndex);
+        text = sliceString(text, howManyCut, text.length() - 1);
+
+    }
+    else if(startIndex > pathLastIdx){
+        if(path.printDirection == 0) return "";
+        text = reverseString(text);
+        howManyCut = startIndex - pathLastIdx;
+        text = sliceString(text, 0, pathLastIdx - howManyCut);
+        text = reverseString(text);
+    }
+    return text;
+}
+
+void writeStringOnPath(TPath path, String text, int startIndex, char c) {
+    if(path.wrapAround == 1) startIndex = correctStartIndex(path, startIndex);
+    if(path.wrapAround == 0){
+        text = cutString(path, text, startIndex);
+        if(startIndex < 0) startIndex = 0;
+    }
+
+    if (path.printDirection == 0) {
+        writeStringForwards(path, text, startIndex, c);
+    }
+    if (path.printDirection == 1){
+        writeStringBackwards(path, text, startIndex, c);
     }
 }
+
+
 
 void main() {
     clrscr();
@@ -233,10 +277,10 @@ void main() {
     appendPoint(point(6,7), path1);
     appendPoint(point(7,7), path1);
     appendPoint(point(8,7), path1);
-    appendPoint(point(9,7), path1);
-    appendPoint(point(10,7), path1);
-    appendPoint(point(10,8), path1);
-    appendPoint(point(10,9), path1);
+//    appendPoint(point(9,7), path1);
+//    appendPoint(point(10,7), path1);
+//    appendPoint(point(10,8), path1);
+//    appendPoint(point(10,9), path1);
 //    appendPoint(point(10,10), path1);
 //    appendPoint(point(10,11), path1);
 
@@ -252,8 +296,10 @@ void main() {
 //    delay(500);
 //    drawPath(path1, '#');
 //    gotoxy(1,20);
-    writeStringOnPath(path1, "hej wici123", 5, '#', 0, 1);
-
+    path1.printDirection = 0;
+    path1.wrapAround = 1;
+//    writeStringOnPath(path1, "nara456", 5, '#');
+    writeStringOnPath(path1, "elo123", 0, '#');
     gotoxy(1,20);
 
 }
