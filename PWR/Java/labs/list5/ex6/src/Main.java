@@ -154,6 +154,71 @@ void addPaths(TPath p1, TPath p2){
     if(firstP1 != lastP2) appendPoint(lastP2, p1);
 }
 
+String reverseString(String text){
+    String reversedText = "";
+    for(int i = 0; i < text.length(); i ++){
+        reversedText = text.charAt(i) + reversedText;
+    }
+    return reversedText;
+}
+
+void writeStringForwards(TPath path, String text, int startIndex, char c, int wrap){
+    int pointsAfterStartId = (path.pointsCount - 1) - startIndex;
+    int carryCharCount = text.length() - (pointsAfterStartId + 1);
+    int currCharIndex = 0;
+    for(int i = 0; i < path.pointsCount; i++){
+        if(i >= startIndex && currCharIndex < text.length()){
+            drawPoint(path.points[i], text.charAt(currCharIndex));
+            currCharIndex++;
+        }
+        else drawPoint(path.points[i], c);
+    }
+    if (wrap == 1){
+        int i = 0;
+        while(carryCharCount > 0){
+            if(i < startIndex){
+                drawPoint(path.points[i], text.charAt(currCharIndex));
+                currCharIndex++;
+            }
+            carryCharCount--;
+            i++;
+        }
+    }
+}
+
+void writeStringBackwards(TPath path, String text, int startIndex, char c, int wrap){
+    int pointsBeforeStartId = startIndex;
+    int carryCharCount = text.length() - (pointsBeforeStartId + 1);
+    int currCharIndex = 0;
+    for(int i = path.pointsCount - 1; i >= 0; i--){
+        if(i <= startIndex && currCharIndex < text.length()){
+            drawPoint(path.points[i], text.charAt(currCharIndex));
+            currCharIndex++;
+        }
+        else drawPoint(path.points[i], c);
+    }
+    if (wrap == 1){
+        int i = path.pointsCount - 1;
+        while(carryCharCount > 0){
+            if(i > startIndex){
+                drawPoint(path.points[i], text.charAt(currCharIndex));
+                currCharIndex++;
+            }
+            carryCharCount --;
+            i--;
+        }
+    }
+}
+
+
+void writeStringOnPath(TPath path, String text, int startIndex, char c, int reverse, int wrap) {
+    if (reverse == 0) {
+        writeStringForwards(path, text, startIndex, c, wrap);
+    }
+    if (reverse == 1){
+        writeStringBackwards(path, text, startIndex, c, wrap);
+    }
+}
 
 void main() {
     clrscr();
@@ -162,22 +227,33 @@ void main() {
 
     setPath(path1);
     setPath(path2);
-//    appendPoint(point(5,5), path);
-//    appendPoint(point(5,6), path);
-//    appendPoint(point(5,7), path);
-//    appendPoint(point(6,7), path);
-//    appendPoint(point(7,7), path);
+    appendPoint(point(5,5), path1);
+    appendPoint(point(5,6), path1);
+    appendPoint(point(5,7), path1);
+    appendPoint(point(6,7), path1);
+    appendPoint(point(7,7), path1);
+    appendPoint(point(8,7), path1);
+    appendPoint(point(9,7), path1);
+    appendPoint(point(10,7), path1);
+    appendPoint(point(10,8), path1);
+    appendPoint(point(10,9), path1);
+//    appendPoint(point(10,10), path1);
+//    appendPoint(point(10,11), path1);
 
     println("");
-    setfgcolor(green);
-    addSectionsToPath(path1, point(1,1), point(10,1), point(10,10)); //creates a path in a form of rectangle
-    drawPath(path1, '#');
-    addSectionsToPath(path2, point(1,10), point(1,1));
-    clrscr();
-    drawPath(path2, '#');
-    addPaths(path1, path2);
-    clrscr();
-    delay(500);
-    drawPath(path1, '#');
+//    setfgcolor(green);
+//    addSectionsToPath(path1, point(1,1), point(10,1), point(10,10)); //creates a path in a form of rectangle
+//    drawPath(path1, '#');
+//    addSectionsToPath(path2, point(1,10), point(1,1));
+//    clrscr();
+//    drawPath(path2, '#');
+//    addPaths(path1, path2);
+//    clrscr();
+//    delay(500);
+//    drawPath(path1, '#');
+//    gotoxy(1,20);
+    writeStringOnPath(path1, "hej wici123", 5, '#', 0, 1);
+
     gotoxy(1,20);
+
 }
