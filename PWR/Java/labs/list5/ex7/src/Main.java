@@ -267,12 +267,14 @@ public static class TGame{
     TPlayer player1;
     TPlayer player2;
     TPlayer winner;
+    boolean draw;
 }
 
 void setGame(TGame game, TBoard board, TPlayer player1, TPlayer player2){
     game.board = board;
     game.player1 = player1;
     game.player2 = player2;
+    game.draw = false;
 }
 
 public static class TPlayer{
@@ -283,6 +285,7 @@ public static class TPlayer{
     int dx;
     int dy;
     boolean hitFlag;
+    boolean didMove;
 }
 
 TPlayer createPlayer(TPoint startPoint, String name, int color, int speed, int dx, int dy){
@@ -349,48 +352,55 @@ void initPlayers(TGame game){
 }
 
 void readKeyboard(TGame game) {
-    while (true) {
-        if (keypressed()) {
-            String keystr1 = readkeystr();
-            switch (keystr1) {
-                case "w":
-                    updatePlayerData(game, game.player1, 0, -1);
-                    break;
-                case "s":
-                    updatePlayerData(game, game.player1, 0, 1);
-                    break;
-                case "a":
-                    updatePlayerData(game, game.player1, -1, 0);
-                    break;
-                case "d":
-                    updatePlayerData(game, game.player1, 1, 0);
-                    break;
-                case "i":
-                    updatePlayerData(game, game.player2, 0, -1);
-                    break;
-                case "k":
-                    updatePlayerData(game, game.player2, 0, 1);
-                    break;
-                case "j":
-                    updatePlayerData(game, game.player2, -1, 0);
-                    break;
-                case "l":
-                    updatePlayerData(game, game.player2, 1, 0);
-                    break;
-            }
-
-
-
+    int dx1 = game.player1.dx;
+    int dy1 = game.player1.dy;
+    int dx2 = game.player2.dx;
+    int dy2 = game.player2.dy;
+    if (keypressed()) {
+        String keystr1 = readkeystr();
+        switch (keystr1) {
+            case "w":
+                dx1 = 0;
+                dy1 = -1;
+                break;
+            case "s":
+                dx1 = 0;
+                dy1 = 1;
+                break;
+            case "a":
+                dy1 = 0;
+                dx1 = -1;
+                break;
+            case "d":
+                dy1 = 0;
+                dx1 = 1;
+                break;
+            case "i":
+                dx2 = 0;
+                dy2 = -1;
+                break;
+            case "k":
+                dx2 = 0;
+                dy2 = 1;
+                break;
+            case "j":
+                dy2 = 0;
+                dx2 = -1;
+                break;
+            case "l":
+                dy2 = 0;
+                dx2 = 1;
+                break;
         }
     }
+    updatePlayersData(game, dx1, dy1, dx2, dy2);
 }
+
 boolean boardCollision(TGame game, TPlayer player, int dx, int dy){
     int lastIndex = player.body.pointsCount - 1;
     TPoint lastPoint = player.body.points[lastIndex];
     int newPointX= lastPoint.x + dx;
     int newPointY= lastPoint.y + dy;
-    gotoxy(20,20);
-    print(newPointY > game.board.y1);
 
 
     return !(newPointX > game.board.x1 &&
@@ -399,16 +409,26 @@ boolean boardCollision(TGame game, TPlayer player, int dx, int dy){
             newPointY < game.board.y2);
 }
 
-void updatePlayerData(TGame game,TPlayer player, int dx, int dy){
+void updatePlayersData(TGame game, int dx1, int dy1, int dx2, int dy2){
 
-    if(!hitTail(game, player, dx, dy) && !boardCollision(game, player, dx, dy)){
-        changePlayerDirection(player, dx, dy);
-        drawNewStep(player);
+    if(!hitTail(game, game.player1, dx1, dy1) && !boardCollision(game, game.player1, dx1, dy1)){
+        changePlayerDirection(game.player1, dx1, dy1);
     }
     else{
-        player.hitFlag = true;
+        game.player1.hitFlag = true;
     }
+
+    if(!hitTail(game, game.player2, dx2, dy2) && !boardCollision(game, game.player2, dx2, dy2)){
+        changePlayerDirection(game.player2, dx2, dy2);
+    }
+    else{
+        game.player2.hitFlag = true;
+    }
+
+    drawNewStep(game.player1);
+    drawNewStep(game.player2);
 }
+
 
 boolean hitTail(TGame game, TPlayer player, int dx, int dy){
     int lastIndex = player.body.pointsCount - 1;
@@ -416,7 +436,8 @@ boolean hitTail(TGame game, TPlayer player, int dx, int dy){
     int newPointX= lastPoint.x + dx;
     int newPointY= lastPoint.y + dy;
 
-    return isPointInPath(point(newPointX,newPointY), game.player1.body) || isPointInPath(point(newPointX, newPointY), game.player2.body);
+    return isPointInPath(point(newPointX,newPointY), game.player1.body) ||
+            isPointInPath(point(newPointX, newPointY), game.player2.body);
 }
 
 
@@ -432,19 +453,51 @@ void drawNewStep(TPlayer player){
     int newPointX= lastPoint.x + player.dx;
     int newPointY= lastPoint.y + player.dy;
     appendPoint(point(newPointX, newPointY), player.body);
-    gotoxy(20,20);
     setfgcolor(player.color);
-
     writeStringOnPath("*#", player.body, lastIndex);
 }
 
-void startGame(TGame game){
+void showResult(TGame game){
+    sound(500,2000);
+    clrscr();
+    setfgcolor(grey);
+
+    gotoxy(20,20);
+    if(game.draw) print("DRAW");
+
+    else {
+        setfgcolor(game.winner.color);
+        print(game.winner.name);
+        setfgcolor(white);
+        print(" WON!");
+    }
+
+}
+
+void startGame(TGame game) {
     cursor_hide();
     initBoard(game);
     initPlayers(game);
-    readKeyboard(game);
-}
+    while (true) {
+        readKeyboard(game);
 
+        if(game.player1.hitFlag && game.player2.hitFlag){
+            game.draw = true;
+            break;
+        }
+
+        if(game.player1.hitFlag){
+            game.winner = game.player2;
+            break;
+        }
+        if(game.player2.hitFlag){
+            game.winner = game.player1;
+            break;
+        }
+    }
+
+    showResult(game);
+}
 
 void main() {
     TGame game = createElements(TGame.class);
