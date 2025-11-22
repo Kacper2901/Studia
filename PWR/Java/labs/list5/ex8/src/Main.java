@@ -292,7 +292,7 @@ public static class TGame{
     Timer timer;
     TApple[] apples;
     int countApples;
-    int gameLoop;
+    int delay;
 }
 
 void setGame(TGame game, TBoard board, TPlayer player1, TPlayer player2){
@@ -304,7 +304,7 @@ void setGame(TGame game, TBoard board, TPlayer player1, TPlayer player2){
     setTimer(game);
     game.apples = new TApple[200];
     game.countApples = 0;
-    game.gameLoop = 0;
+    game.delay = 64;
 }
 
 public static class TPlayer{
@@ -552,15 +552,15 @@ void updatePlayersData(TGame game, int dx1, int dy1, int dx2, int dy2){
         game.player2.hitFlag = true;
     }
 
-    if(game.gameLoop % 2 == 0) {
-        drawNewStep(game, game.player1);
-        drawNewStep(game, game.player2);
-    }
+    drawNewStep(game, game.player1);
+    drawNewStep(game, game.player2);
+
     eatApple(game, game.player1);
     eatApple(game, game.player2);
     updateTime(game);
     printPoints(game);
 
+    if(game.time % 60 == 0) game.delay = (int) (game.delay * 0.66);
     if ((game.time % 10 == 0 && game.countApples - 1 != game.time / 10) || game.countApples == 0) addApple(game);
     drawApples(game);
 }
@@ -643,7 +643,6 @@ void showResult(TGame game){
         readkey();
         return;
     }
-    sound(500,2000);
     if(game.draw) print("DRAW");
     else if(!game.interrupted) {
         setfgcolor(game.winner.color);
@@ -675,8 +674,9 @@ void startGame(TGame game) {
             break;
         }
         if(game.interrupted) break;
-        game.gameLoop = (game.gameLoop + 1) % 5;
+        delay(game.delay);
     }
+    sound(500,2000);
 
     showResult(game);
 
@@ -689,9 +689,3 @@ void main() {
     gotoxy(200,200);
 
 }
-
-
-
-
-
-
