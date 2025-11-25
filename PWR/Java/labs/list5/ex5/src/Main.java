@@ -23,6 +23,7 @@ public static class TGame {
     public int activeSquares;
     public int time;
     public TPlayer tempPlayer = new TPlayer();
+    boolean finishGameFlag;
 }
 
 public static class TBoard{
@@ -52,12 +53,13 @@ public static class TSquare {
     boolean isActive;
 }
 
-public static void setGame(TGame game, TBoard board, TSquare... squares) {
+public void setGame(TGame game, TBoard board, TSquare... squares) {
     game.board = board;
     game.squaresCount = 0;
     game.loopCount = 0;
     game.time = 60;
     game.playerCount = 0;
+    game.finishGameFlag = false;
 
     for (TSquare s : squares) {
         addSquare(game, s);
@@ -71,6 +73,7 @@ public static TPlayer createPlayer(int color, int x, int y, int hz) {
 }
 
 public static void setPlayer(TPlayer player, int color, int x, int y, int hz) {
+    player.square = new TSquare();
     player.square.size = 3;
     player.square.color = color;
     player.square.dx = 0;
@@ -81,11 +84,11 @@ public static void setPlayer(TPlayer player, int color, int x, int y, int hz) {
     player.hz = hz;
 }
 
-public static void setSquare(TGame game, TSquare s, int speed) {
+public void setSquare(TGame game, TSquare s, int speed) {
     s.color = (int) (Math.random() * 11 + 1);
     s.size = (int) (Math.random() * 2 + 1);
-    s.x = (int) (Math.random() * 117) + game.board.x + 1;
-    s.y = (int) (Math.random() * 27) + game.board.y + 1;
+    s.x = (int) (Math.random() * game.board.sizeX - s.size - 1) + game.board.x + 1;
+    s.y = (int) (Math.random() * game.board.sizeY -s.size - 1) + game.board.y + 1 ;
     s.dy = randFromInterval(-1, 1);
     s.speed = speed;
     s.isActive = true;
@@ -102,13 +105,13 @@ public static int randFromInterval(int l, int r) {
     return (int) (Math.random() * (r + 1 + Math.abs(l))) + l;
 }
 
-public static void addSquare(TGame game, TSquare s) {
+public void addSquare(TGame game, TSquare s) {
     game.squares[game.squaresCount] = s;
     game.squaresCount++;
     game.activeSquares++;
 }
 
-public static TSquare createSquare(TGame game, int speed) {
+public TSquare createSquare(TGame game, int speed) {
     TSquare s = new TSquare();
     setSquare(game, s, speed);
     return s;
@@ -125,6 +128,11 @@ public void setBoard(TBoard board, int x, int y, int sizeX, int sizeY){
     board.y = y;
     board.sizeX = sizeX;
     board.sizeY = sizeY;
+}
+
+void updatePlayerPos(TPlayer player){
+    player.square.x += player.square.dx;
+    player.square.y += player.square.dy;
 }
 
 boolean squareBoardCollision(TGame game, TSquare square){
@@ -152,9 +160,226 @@ boolean squaresCollision(TSquare s1, TSquare s2){
             s2Down <= s1Up));
 }
 
-public static void printBoard(TGame game) {
-    framexyc(game.board.x, game.board.y, game.board.x + game.board.sizeX - 1, game.board.y + game.board.sizeY - 1, '#');
+public static boolean hitPlayers(TPlayer p1, TPlayer p2) {
+    return (p1.square.x + p1.square.size + p1.square.dx - 1 >= p2.square.x &&
+            p1.square.x + p1.square.dx <= p2.square.x + p2.square.size - 1 &&
+            p1.square.y + p1.square.dy + p1.square.size - 1 >= p2.square.y &&
+            p1.square.y + p1.square.dy <= p2.square.y + p2.square.size - 1); //from right
+}
+
+public static boolean hitAnyPlayer(TPlayer p, TGame game) {
     for (int i = 0; i < game.playerCount; i++) {
-        updatePlayer(game.players[i]);
+        if (hitPlayers(p, game.players[i]) && p != game.players[i]) return true;
     }
+    return false;
+}
+
+
+public void drawPlayer(TPlayer player) {
+    setfgcolor(player.square.color);
+    framexyc(player.square.x, player.square.y, player.square.x + player.square.size - 1, player.square.y + player.square.size - 1, '#');
+}
+
+void drawSquare(TSquare square){
+    setfgcolor(square.color);
+    framexyc(square.x, square.y, square.x + square.size - 1, square.y + square.size - 1, '#');
+}
+
+public void drawBoard(TGame game) {
+    framexyc(game.board.x, game.board.y, game.board.x + game.board.sizeX - 1, game.board.y + game.board.sizeY - 1, '#');
+    for (int i = 0; i < game.squaresCount; i++) {
+        drawSquare(game.squares[i]);
+    }
+    for (int j = 0; j < game.playerCount; j++){
+        drawPlayer(game.players[j]);
+    }
+}
+
+public void randomDirection(TGame game, TSquare s) {
+    while ((s.dy == 0 & s.dx == 0) || squareBoardCollision(game, s)) {
+        s.dx = randFromInterval(-1, 1);
+        s.dy = randFromInterval(-1, 1);
+    }
+}
+
+public void randomDirection(TGame game, TSquare s1, TSquare s2) {
+    while ((s1.dy == 0 & s1.dx == 0) || squareBoardCollision(game, s1) || squareBoardCollision(game, s2) || squaresCollision(s1, s2)) {
+        s1.dx = randFromInterval(-1, 1);
+        s1.dy = randFromInterval(-1, 1);
+        s2.dx = randFromInterval(-1, 1);
+        s2.dy = randFromInterval(-1, 1);
+    }
+}
+
+public void updateSquares(TGame game) {
+    TSquare[] s = game.squares;
+
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (s[i].isActive) {
+            if (game.loopCount % s[i].speed == 0) {
+                if (squareBoardCollision(game, s[i]) || ((s[i].dx == 0 && s[i].dy == 0))) {
+                    randomDirection(game, s[i]);
+                }
+
+                for (int j = 0; j < game.squaresCount; j++) {
+                    if (squaresCollision(s[i], s[j]) && i != j && s[i].isActive && s[j].isActive) {
+                        randomDirection(game, s[i], s[j]);
+                        randomDirection(game, s[j], s[i]);
+                    }
+                }
+                draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
+
+
+                if (s[i].isActive) {
+                    s[i].x += s[i].dx;
+                    s[i].y += s[i].dy;
+                    setfgcolor(s[i].color);
+                    draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
+                }
+            }
+        }
+    }
+}
+
+
+public void updatePlayerPoints(TGame game) {
+    TSquare[] s = game.squares;
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (s[i].isActive) {
+            for (int j = 0; j < game.playerCount; j++) {
+                if (squaresCollision(game.players[j].square, s[i])) {
+                    s[i].isActive = false;
+                    game.activeSquares--;
+                    draw_frame_c(s[i].x, s[i].y, s[i].size, ' ');
+                    sound(game.players[j].hz, 20);
+                    if (s[i].size == 1) game.players[j].score += 4;
+                    if (s[i].size == 2) game.players[j].score += 1;
+                }
+            }
+        }
+    }
+}
+
+public static void addPlayer(TGame game, TPlayer player) {
+    game.players[game.playerCount] = player;
+    game.playerCount++;
+}
+
+TPlayer interpretKey(TGame game, String pressedKey){
+    TPlayer movedPlayer;
+    TPlayer player1 = game.players[0];
+    TPlayer player2 = game.players[2];
+    movedPlayer = player2;
+
+    switch (pressedKey){
+        case "w":
+            player1.square.dx = 0;
+            player1.square.dy = -1;
+            movedPlayer = player1;
+            break;
+        case "s":
+            player1.square.dx = 0;
+            player1.square.dy = 1;
+            movedPlayer = player1;
+            break;
+        case "a":
+            player1.square.dx = -1;
+            player1.square.dy = 0;
+            movedPlayer = player1;
+            break;
+        case "d":
+            player1.square.dx = 1;
+            player1.square.dy = 0;
+            movedPlayer = player1;
+        case "i":
+            player2.square.dx = 0;
+            player2.square.dy = -1;
+            movedPlayer = player2;
+            break;
+        case "k":
+            player2.square.dx = 0;
+            player2.square.dy = 1;
+            movedPlayer = player2;
+        case "j":
+            player2.square.dx = -1;
+            player2.square.dy = 0;
+            movedPlayer = player2;
+            break;
+        case "l":
+            player2.square.dx = 1;
+            player2.square.dy = 0;
+            movedPlayer = player2;
+            break;
+        case "q":
+            game.finishGameFlag = true;
+            movedPlayer = player2;
+            player2.square.dx = 0;
+            player2.square.dy = 0;
+    }
+    return movedPlayer;
+}
+
+void CONTROLLER(TGame game){
+    int dx = 0;
+    int dy = 0;
+    String key = "";
+
+    if (keypressed()) key = readkeystr();
+
+    MODEL(game, key);
+
+}
+
+void MODEL(TGame game, String pressedKey){
+    interpretKey(game, pressedKey);
+    TPlayer movedPlayer = interpretKey(game, pressedKey);
+
+    if (!hitAnyPlayer(movedPlayer, game)) {
+        if (squareBoardCollision(game, movedPlayer.square)) {
+            updatePlayerPos(movedPlayer);
+        }
+    } else {
+        sound(400, 20);
+    }
+
+    updatePlayerPoints(game);
+    updateSquares(game);
+    game.loopCount = (game.loopCount + 1) % 10;
+    VIEW(game);
+}
+
+public static void VIEW(TGame game) {
+    TSquare[] s = game.squares;
+
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (s[i].isActive) {
+            setfgcolor(s[i].color);
+            draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
+        }
+    }
+    printPlayer(game);
+    printScore(game);
+    printTime(game);
+}
+
+
+void startGame(TGame game){
+    cursor_hide();
+    drawBoard(game);
+
+    readkey();
+    gotoxy(200,200);
+}
+
+void main(){
+    TGame game = createElements(TGame.class);
+    setGame(game, createBoard(1,1,120,30));
+    addSquare(game, createSquare(game, 2));
+    addSquare(game, createSquare(game, 2));
+    addSquare(game, createSquare(game, 2));
+    addPlayer(game,createPlayer(blue, game.board.x + 1, game.board.y + game.board.sizeY - 4, 400));
+    addPlayer(game,createPlayer(red, game.board.x + game.board.sizeX - 4, game.board.y + game.board.sizeY - 4, 400));
+
+    startGame(game);
+
 }
