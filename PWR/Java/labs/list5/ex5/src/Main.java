@@ -40,6 +40,7 @@ public static class TPlayer {
     TSquare square;
     public int score;
     public int hz;
+    int control;
 }
 
 
@@ -87,6 +88,7 @@ public static void setPlayer(TPlayer player, int color, int x, int y, int hz) {
     player.square.x = x;
     player.square.y = y;
     player.hz = hz;
+    player.control = 0;
 }
 
 public void setSquare(TGame game, TSquare s, int speed) {
@@ -182,6 +184,12 @@ public void drawPlayer(TPlayer player) {
     framexyc(player.square.x, player.square.y, player.square.x + player.square.size - 1, player.square.y + player.square.size - 1, '#');
 }
 
+void drawPlayers(TGame game){
+    for(int i = 0; i < game.playerCount; i++){
+        drawPlayer(game.players[i]);
+    }
+}
+
 void drawSquare(TSquare square){
     setfgcolor(square.color);
     framexyc(square.x, square.y, square.x + square.size - 1, square.y + square.size - 1, '#');
@@ -213,7 +221,7 @@ public void randomDirection(TGame game, TSquare s1, TSquare s2) {
     }
 }
 
-public void updateSquares(TGame game) {
+public void updateSquaresXY(TGame game) {
     TSquare[] s = game.squares;
 
     for (int i = 0; i < game.squaresCount; i++) {
@@ -243,7 +251,42 @@ public void updateSquares(TGame game) {
     }
 }
 
+TSquare findClosestSquare(TGame game, TPlayer player){
+    TSquare closestSquare = game.squares[0];
+    int smallestDist = game.board.sizeX + game.board.sizeY + 10000;
+    int distX, distY;
+    int totalDist;
+    for(int i = 0; i < game.squaresCount; i++){
+        distX = player.square.x - game.squares[i].x;
+        distY = player.square.y - game.squares[i].y;
+        totalDist = Math.abs(distX) + Math.abs(distY);
+        if(totalDist < smallestDist && game.squares[i].isActive){
+            smallestDist = totalDist;
+            closestSquare = game.squares[i];
+        }
+    }
+    return closestSquare;
+}
 
+void chooseChaseDirection(TPlayer player, TSquare s){
+    int distX = s.x - player.square.x;
+    int distY = s.y - player.square.y;
+    player.square.dx = 1;
+    player.square.dy = 1;
+
+    if(Math.abs(distX) > Math.abs(distY)) player.square.dy = 0;
+    else player.square.dx = 0;
+
+    if(distX < 0) player.square.dx *= -1;
+    if(distY < 0 ) player.square.dy *= -1;
+
+}
+
+void manhattanBOT(TGame game, TPlayer player){
+    TSquare targetSquare = findClosestSquare(game,player);
+    chooseChaseDirection(player,targetSquare);
+    if(!hitAnyPlayer(player, game) && !squareBoardCollision(game, player.square))updatePlayerPos(player);
+}
 
 public void updatePlayerPoints(TGame game) {
     TSquare[] s = game.squares;
@@ -391,13 +434,19 @@ void showResults(TGame game){
     }
 }
 
-public void movePlayer(TGame game, TPlayer movedPlayer){
+public void updatePlayerXY(TGame game, TPlayer movedPlayer){
     if (!hitAnyPlayer(movedPlayer, game)) {
         if (!squareBoardCollision(game, movedPlayer.square)) {
             updatePlayerPos(movedPlayer);
         }
     } else {
         sound(400, 20);
+    }
+}
+
+void checkPlayersControl(TGame game){
+    for(int i = 0; i < game.playerCount; i++){
+        if (game.players[i].control == 1) manhattanBOT(game, game.players[i]);
     }
 }
 
@@ -409,10 +458,10 @@ void CONTROLLER(TGame game){
 
 void MODEL(TGame game, String pressedKey){
     TPlayer movedPlayer = interpretKey(game, pressedKey);
-
-    movePlayer(game, movedPlayer);
+    if(movedPlayer.control == 0) updatePlayerXY(game, movedPlayer);
+    checkPlayersControl(game);
     updatePlayerPoints(game);
-    updateSquares(game);
+    updateSquaresXY(game);
     if(game.activeSquares == 0) game.winnerGameFlag = true;
     if(game.time == 0) game.timeEndFlag = true;
     game.loopCount = (game.loopCount + 1) % 10;
@@ -421,7 +470,7 @@ void MODEL(TGame game, String pressedKey){
 
 public void VIEW(TGame game, TPlayer movedPlayer) {
 
-    drawPlayer(movedPlayer);
+    drawPlayers(game);
     drawSquares(game);
     printScore(game);
     printTime(game);
@@ -448,8 +497,12 @@ void main(){
     addSquare(game, createSquare(game, 2));
     addSquare(game, createSquare(game, 2));
     addSquare(game, createSquare(game, 2));
+    addSquare(game, createSquare(game, 2));
+    addSquare(game, createSquare(game, 2));
+    addSquare(game, createSquare(game, 2));
     addPlayer(game,createPlayer(blue, game.board.x + 1, game.board.y + game.board.sizeY - 4, 400));
     addPlayer(game,createPlayer(red, game.board.x + game.board.sizeX - 4, game.board.y + game.board.sizeY - 4, 400));
+    game.players[1].control = 1;
 
     startGame(game);
 
