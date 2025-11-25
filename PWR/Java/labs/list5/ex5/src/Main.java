@@ -1,4 +1,5 @@
 
+import static java.lang.IO.print;
 import static java.lang.IO.println;
 import static term.term.*;    //including package to be able to use simple print()
 
@@ -23,7 +24,9 @@ public static class TGame {
     public int activeSquares;
     public int time;
     public TPlayer tempPlayer = new TPlayer();
-    boolean finishGameFlag;
+    boolean winnerGameFlag;
+    boolean timeEndFlag;
+    boolean interruptionFlag;
 }
 
 public static class TBoard{
@@ -59,7 +62,9 @@ public void setGame(TGame game, TBoard board, TSquare... squares) {
     game.loopCount = 0;
     game.time = 60;
     game.playerCount = 0;
-    game.finishGameFlag = false;
+    game.timeEndFlag = false;
+    game.winnerGameFlag = false;
+    game.interruptionFlag = false;
 
     for (TSquare s : squares) {
         addSquare(game, s);
@@ -140,8 +145,8 @@ boolean squareBoardCollision(TGame game, TSquare square){
     int rightX = leftX + square.size - 1;
     int upY = square.y + square.dy;
     int downY = upY + square.size - 1;
-    return (leftX <= game.board.x || rightX >= game.board.x + game.board.sizeX ||
-            upY <= game.board.y || downY >= game.board.y + game.board.sizeY);
+    return ((leftX == game.board.x || rightX == game.board.x + game.board.sizeX - 1) ||
+            (upY == game.board.y || downY == game.board.y + game.board.sizeY - 1));
 }
 
 boolean squaresCollision(TSquare s1, TSquare s2){
@@ -155,28 +160,25 @@ boolean squaresCollision(TSquare s1, TSquare s2){
     int s2Down = s2Up + s2.size - 1;
 
     return ((s1Right >= s2Left &&
-            s2Right <= s1Left) ||
+            s1Left <= s2Right) &&
             (s1Down >= s2Up &&
-            s2Down <= s1Up));
+            s1Up <= s2Down));
 }
 
-public static boolean hitPlayers(TPlayer p1, TPlayer p2) {
-    return (p1.square.x + p1.square.size + p1.square.dx - 1 >= p2.square.x &&
-            p1.square.x + p1.square.dx <= p2.square.x + p2.square.size - 1 &&
-            p1.square.y + p1.square.dy + p1.square.size - 1 >= p2.square.y &&
-            p1.square.y + p1.square.dy <= p2.square.y + p2.square.size - 1); //from right
-}
 
-public static boolean hitAnyPlayer(TPlayer p, TGame game) {
+public  boolean hitAnyPlayer(TPlayer p, TGame game) {
     for (int i = 0; i < game.playerCount; i++) {
-        if (hitPlayers(p, game.players[i]) && p != game.players[i]) return true;
+        if (squaresCollision(p.square, game.players[i].square) && p != game.players[i]) return true;
     }
     return false;
 }
 
 
 public void drawPlayer(TPlayer player) {
+    int prevX = player.square.x - player.square.dx;
+    int prevY = player.square.y - player.square.dy;
     setfgcolor(player.square.color);
+    framexyc(prevX, prevY, prevX + player.square.size - 1, prevY + player.square.size - 1, ' ');
     framexyc(player.square.x, player.square.y, player.square.x + player.square.size - 1, player.square.y + player.square.size - 1, '#');
 }
 
@@ -242,6 +244,7 @@ public void updateSquares(TGame game) {
 }
 
 
+
 public void updatePlayerPoints(TGame game) {
     TSquare[] s = game.squares;
     for (int i = 0; i < game.squaresCount; i++) {
@@ -260,6 +263,18 @@ public void updatePlayerPoints(TGame game) {
     }
 }
 
+public static void setTimer(TGame game) {
+    Timer timer = new Timer();
+    TimerTask timerTask = new TimerTask() {
+        @Override
+        public void run() {
+            game.time--;
+        }
+    };
+
+    timer.schedule(timerTask, 1000, 1000);
+}
+
 public static void addPlayer(TGame game, TPlayer player) {
     game.players[game.playerCount] = player;
     game.playerCount++;
@@ -268,8 +283,12 @@ public static void addPlayer(TGame game, TPlayer player) {
 TPlayer interpretKey(TGame game, String pressedKey){
     TPlayer movedPlayer;
     TPlayer player1 = game.players[0];
-    TPlayer player2 = game.players[2];
-    movedPlayer = player2;
+    TPlayer player2 = game.players[1];
+    movedPlayer = game.tempPlayer;
+    player1.square.dy = 0;
+    player1.square.dx = 0;
+    player2.square.dx = 0;
+    player2.square.dy = 0;
 
     switch (pressedKey){
         case "w":
@@ -291,6 +310,7 @@ TPlayer interpretKey(TGame game, String pressedKey){
             player1.square.dx = 1;
             player1.square.dy = 0;
             movedPlayer = player1;
+            break;
         case "i":
             player2.square.dx = 0;
             player2.square.dy = -1;
@@ -300,6 +320,7 @@ TPlayer interpretKey(TGame game, String pressedKey){
             player2.square.dx = 0;
             player2.square.dy = 1;
             movedPlayer = player2;
+            break;
         case "j":
             player2.square.dx = -1;
             player2.square.dy = 0;
@@ -311,53 +332,97 @@ TPlayer interpretKey(TGame game, String pressedKey){
             movedPlayer = player2;
             break;
         case "q":
-            game.finishGameFlag = true;
+            game.interruptionFlag = true;
             movedPlayer = player2;
             player2.square.dx = 0;
             player2.square.dy = 0;
+            break;
+        case "":
+            movedPlayer.square.dx = 0;
+            movedPlayer.square.dy = 0;
+            break;
     }
     return movedPlayer;
 }
 
-void CONTROLLER(TGame game){
-    int dx = 0;
-    int dy = 0;
-    String key = "";
-
-    if (keypressed()) key = readkeystr();
-
-    MODEL(game, key);
-
+public void drawSquares(TGame game){
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (game.squares[i].isActive) {
+            setfgcolor(game.squares[i].color);
+            draw_frame_c(game.squares[i].x, game.squares[i].y, game.squares[i].size, '#');
+        }
+    }
 }
 
-void MODEL(TGame game, String pressedKey){
-    interpretKey(game, pressedKey);
-    TPlayer movedPlayer = interpretKey(game, pressedKey);
+public static void printScore(TGame game) {
+    for (int i = 0; i < game.playerCount; i++) {
+        gotoxy(game.board.x + game.board.sizeX + 1, game.board.y + i);
+        setfgcolor(game.players[i].square.color);
+        if (game.players[i].score < 10) System.out.print("Player" + i + " SCORE: 00" + game.players[i].score);
+        else if (game.players[i].score < 100) System.out.print(" SCORE: 0" + game.players[i].score);
+        else System.out.print("Player" + i + 1 + " SCORE: " + game.players[i].score);
+    }
+}
 
+public static void printTime(TGame game) {
+    gotoxy((int) ((game.board.x + game.board.sizeX) / 2) - 5 - 8, game.board.y);
+    setfgcolor(red);
+    if (game.time >= 10) {
+        println("TIME: " + game.time);
+    } else {
+        println("TIME: 0" + game.time);
+    }
+}
+
+void showResults(TGame game){
+    clrscr();
+    setfgcolor(white);
+    if(game.interruptionFlag){
+        framexyc(50,14,69, 16, '*');
+        gotoxy(51,15);
+        setfgcolor(red);
+        print(" GAME INTERRUPTED ");
+    }
+    else if(game.timeEndFlag){
+        framexyc(50,14,63, 18, '*');
+        gotoxy(51,15);
+        setfgcolor(grey);
+        print(" TIME ENDED ");
+    }
+}
+
+public void movePlayer(TGame game, TPlayer movedPlayer){
     if (!hitAnyPlayer(movedPlayer, game)) {
-        if (squareBoardCollision(game, movedPlayer.square)) {
+        if (!squareBoardCollision(game, movedPlayer.square)) {
             updatePlayerPos(movedPlayer);
         }
     } else {
         sound(400, 20);
     }
-
-    updatePlayerPoints(game);
-    updateSquares(game);
-    game.loopCount = (game.loopCount + 1) % 10;
-    VIEW(game);
 }
 
-public static void VIEW(TGame game) {
-    TSquare[] s = game.squares;
+void CONTROLLER(TGame game){
+    String key = "";
+    if (keypressed()) key += readkeystr();
+    MODEL(game, key);
+}
 
-    for (int i = 0; i < game.squaresCount; i++) {
-        if (s[i].isActive) {
-            setfgcolor(s[i].color);
-            draw_frame_c(s[i].x, s[i].y, s[i].size, '#');
-        }
-    }
-    printPlayer(game);
+void MODEL(TGame game, String pressedKey){
+    TPlayer movedPlayer = interpretKey(game, pressedKey);
+
+    movePlayer(game, movedPlayer);
+    updatePlayerPoints(game);
+    updateSquares(game);
+    if(game.activeSquares == 0) game.winnerGameFlag = true;
+    if(game.time == 0) game.timeEndFlag = true;
+    game.loopCount = (game.loopCount + 1) % 10;
+    VIEW(game, movedPlayer);
+}
+
+public void VIEW(TGame game, TPlayer movedPlayer) {
+
+    drawPlayer(movedPlayer);
+    drawSquares(game);
     printScore(game);
     printTime(game);
 }
@@ -365,7 +430,13 @@ public static void VIEW(TGame game) {
 
 void startGame(TGame game){
     cursor_hide();
+    setTimer(game);
     drawBoard(game);
+
+
+    while (!game.timeEndFlag && !game.winnerGameFlag && !game.interruptionFlag) CONTROLLER(game);
+
+    showResults(game);
 
     readkey();
     gotoxy(200,200);
