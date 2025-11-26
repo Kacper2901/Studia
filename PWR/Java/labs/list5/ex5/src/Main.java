@@ -41,6 +41,7 @@ public static class TPlayer {
     public int score;
     public int hz;
     int control;
+    int targetSquareIdx;
 }
 
 
@@ -72,13 +73,13 @@ public void setGame(TGame game, TBoard board, TSquare... squares) {
     }
 }
 
-public static TPlayer createPlayer(int color, int x, int y, int hz) {
+public TPlayer createPlayer(int color, int x, int y, int hz) {
     TPlayer player = new TPlayer();
     setPlayer(player, color, x, y, hz);
     return player;
 }
 
-public static void setPlayer(TPlayer player, int color, int x, int y, int hz) {
+public void setPlayer(TPlayer player, int color, int x, int y, int hz) {
     player.square = new TSquare();
     player.square.size = 3;
     player.square.color = color;
@@ -89,6 +90,7 @@ public static void setPlayer(TPlayer player, int color, int x, int y, int hz) {
     player.square.y = y;
     player.hz = hz;
     player.control = 0;
+    player.targetSquareIdx = 0;
 }
 
 public void setSquare(TGame game, TSquare s, int speed) {
@@ -288,6 +290,25 @@ void manhattanBOT(TGame game, TPlayer player){
     if(!hitAnyPlayer(player, game) && !squareBoardCollision(game, player.square))updatePlayerPos(player);
 }
 
+int chooseActiveSquare(TGame game){
+    int randIdx = randFromInterval(0,game.squaresCount - 1);
+    TSquare square = game.squares[randIdx];
+    while (!square.isActive){
+        randIdx = randFromInterval(0,game.squaresCount - 1);
+        gotoxy(130,30);
+        print(randIdx);
+        square = game.squares[randIdx];
+    }
+
+    return randIdx;
+}
+
+void targetBOT(TGame game, TPlayer player){
+    while(!game.squares[player.targetSquareIdx].isActive) player.targetSquareIdx = chooseActiveSquare(game);
+    chooseChaseDirection(player, game.squares[player.targetSquareIdx]);
+    if(!hitAnyPlayer(player, game) && !squareBoardCollision(game, player.square))updatePlayerPos(player);
+}
+
 public void updatePlayerPoints(TGame game) {
     TSquare[] s = game.squares;
     for (int i = 0; i < game.squaresCount; i++) {
@@ -447,6 +468,7 @@ public void updatePlayerXY(TGame game, TPlayer movedPlayer){
 void checkPlayersControl(TGame game){
     for(int i = 0; i < game.playerCount; i++){
         if (game.players[i].control == 1) manhattanBOT(game, game.players[i]);
+        else if (game.players[i].control == 2) targetBOT(game, game.players[i]);
     }
 }
 
@@ -502,7 +524,7 @@ void main(){
     addSquare(game, createSquare(game, 2));
     addPlayer(game,createPlayer(blue, game.board.x + 1, game.board.y + game.board.sizeY - 4, 400));
     addPlayer(game,createPlayer(red, game.board.x + game.board.sizeX - 4, game.board.y + game.board.sizeY - 4, 400));
-    game.players[1].control = 1;
+    game.players[1].control = 2;
 
     startGame(game);
 
