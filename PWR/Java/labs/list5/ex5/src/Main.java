@@ -2,6 +2,10 @@
 import static java.lang.IO.print;
 import static java.lang.IO.println;
 import static term.term.*;    //including package to be able to use simple print()
+import java.io.File;
+import java.io.IOException;
+import java.io.FileWriter;
+
 
 public static void draw_frame_c(int x, int y, int l, char c) {
     framexyc(x, y, x + l - 1, y + l - 1, c);
@@ -455,6 +459,50 @@ void showResults(TGame game){
     }
 }
 
+public void useConfigFile(TPlayer player1, TPlayer player2){
+    boolean player1Initialized = false;
+    boolean player2Initialized = false;
+    String namePlayer1 = "Player1";
+    String namePlayer2 = "Player2";
+    File conf = new File("conf.cfg");
+    try(Scanner confRead = new Scanner(conf)){
+        while(confRead.hasNextLine()){
+            String line = confRead.nextLine();
+            line = line.trim();
+            if(line.contains(namePlayer1)){
+                char last = line.charAt(line.length() - 1);
+                if(last == '1') player1.control = 1;
+                else if(last == '2') player1.control = 2;
+                else player1.control = 0;
+                player1Initialized = true;
+            }
+            if(line.contains(namePlayer2)){
+                char last = line.charAt(line.length() - 1);
+                if(last == '1') player2.control = 1;
+                else if(last == '2') player2.control = 2;
+                else player2.control = 0;
+                player2Initialized = true;
+            }
+        }
+        if(!player1Initialized) player1.control = 0;
+        if(!player2Initialized) player2.control = 0;
+    }
+    catch (FileNotFoundException e){
+        try {
+            player1.control = 0;
+            player2.control = 0;
+            conf.createNewFile();
+            FileWriter confWriter = new FileWriter(conf);
+            confWriter.write("Player1: 0\n");
+            confWriter.write("Player2: 0\n");
+            confWriter.close();
+        }
+        catch (IOException exeption){
+            println("error while createing file");
+        }
+    }
+}
+
 public void updatePlayerXY(TGame game, TPlayer movedPlayer){
     if (!hitAnyPlayer(movedPlayer, game)) {
         if (!squareBoardCollision(game, movedPlayer.square)) {
@@ -503,6 +551,8 @@ void startGame(TGame game){
     cursor_hide();
     setTimer(game);
     drawBoard(game);
+    useConfigFile(game.players[0], game.players[1]);
+
 
 
     while (!game.timeEndFlag && !game.winnerGameFlag && !game.interruptionFlag) CONTROLLER(game);
@@ -524,7 +574,7 @@ void main(){
     addSquare(game, createSquare(game, 2));
     addPlayer(game,createPlayer(blue, game.board.x + 1, game.board.y + game.board.sizeY - 4, 400));
     addPlayer(game,createPlayer(red, game.board.x + game.board.sizeX - 4, game.board.y + game.board.sizeY - 4, 400));
-    game.players[1].control = 2;
+//    game.players[1].control = 2;
 
     startGame(game);
 
