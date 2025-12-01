@@ -1,5 +1,5 @@
-Kacper Gęśla 290168
-
+//Kacper Gęśla 290168
+//
 import static java.lang.IO.println;
 import static java.lang.IO.print;
 import static term.term.*;    //including package to be able to use simple print()
@@ -16,7 +16,7 @@ int scaleColor(int hist_min, int hist_max, int val){
 int[][] randMTX(int sizeX, int sizeY, int loops){
     int[][] matrix = new int[sizeY][sizeX];
     int x, y;
-    int seed = 5000;
+    int seed = 123456;
 
     SecureRandom secRand = new SecureRandom();
     Random rand = new Random(seed);
@@ -27,11 +27,12 @@ int[][] randMTX(int sizeX, int sizeY, int loops){
     }
 
     for(int i = 0; i < loops; i++){
-//        rand.setSeed(seed++);
-//        x = rand.nextInt(sizeX);
-//        y = rand.nextInt(sizeY);
-        x = secRand.nextInt(sizeX);
-        y = secRand.nextInt(sizeY);
+        rand.setSeed(seed++);
+        x = rand.nextInt(sizeX);
+        rand.setSeed(seed++);
+        y = rand.nextInt(sizeY);
+//        x = secRand.nextInt(sizeX);
+//        y = secRand.nextInt(sizeY);
         matrix[y][x]++;
     }
 
@@ -62,8 +63,8 @@ void printMatrix(int[][] matrix, int sizeX, int sizeY){
 
 
 void main() {
-    int[][] randomMatrix = randMTX(200,50,5000000);
-    printMatrix(randomMatrix,200,50);
+    int[][] randomMatrix = randMTX(100,30,5000000);
+    printMatrix(randomMatrix,100,30);
 
 }
 
