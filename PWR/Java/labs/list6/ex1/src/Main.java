@@ -165,18 +165,26 @@ public void writeForward(TCornerPath cornerPath, String text, int startIdx, int 
     TPoint[] path = createPath(cornerPath);
     int currTextIdx = 0;
     if(wrapped == 1) startIdx %= cornerPath.circuit;
-    while(currTextIdx < text.length()){
+    while(currTextIdx < text.length() && startIdx < cornerPath.circuit && startIdx >= 0){
         gotoxy(path[startIdx].x, path[startIdx].y);
         print(text.charAt(currTextIdx));
         startIdx++;
         if(wrapped == 1) startIdx = (startIdx) % cornerPath.circuit;
         currTextIdx++;
     }
-
 }
 
 public void writeBackward(TCornerPath cornerPath, String text, int startIdx, int wrapped){
-
+    TPoint[] path = createPath(cornerPath);
+    int currTextIdx = 0;
+    if(wrapped == 1) startIdx = ((startIdx % cornerPath.circuit) + cornerPath.circuit) % cornerPath.circuit;
+    while(currTextIdx < text.length() && startIdx >= 0 && startIdx < cornerPath.circuit){
+        gotoxy(path[startIdx].x, path[startIdx].y);
+        print(text.charAt(currTextIdx));
+        startIdx--;
+        if(wrapped == 1) startIdx = ((startIdx % cornerPath.circuit) + cornerPath.circuit) % cornerPath.circuit;
+        currTextIdx++;
+    }
 }
 
 public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx, int direction, int wrapped){
@@ -194,7 +202,8 @@ void main() {
     addPoint(cornerPath1, point(10,1));
 
 
-    writeForward(cornerPath1, "hello yusuf", 18, 1);
+//    writeForward(cornerPath1, "hello yusuf", 21, 1);
+    writeBackward(cornerPath1, "hello yusuf", 2, 0);
 //    TCornerPath cornerPath2 = createElements(TCornerPath.class);
 //    setCornerPath(cornerPath2);
 //    addPoint(cornerPath2, point(52,3));
