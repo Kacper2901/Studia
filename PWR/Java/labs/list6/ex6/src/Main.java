@@ -80,7 +80,7 @@ public void setGame(TGame game, TBoard board, TSquare... squares) {
     game.timeEndFlag = false;
     game.winnerGameFlag = false;
     game.interruptionFlag = false;
-    game.gravity = 0.5;
+    game.gravity = 0.7;
 
     for (TSquare s : squares) {
         addSquare(game, s);
@@ -114,13 +114,13 @@ public void setSquare(TGame game, TSquare s) {
     s.color = (int) (Math.random() * 11 + 1);
 //    s.size = (int) (Math.random() * 2 + 1);
     s.size = 3;
-    s.x = (int) (Math.random() * (game.board.sizeX - 3)) + game.board.x + 1;
-    s.y = (int) (Math.random() * (game.board.sizeY - 3)) + game.board.y + 1;
-    s.speedX = 1;
+    s.x = (int) (Math.random() * (game.board.sizeX - 4)) + game.board.x + 1;
+    s.y = (int) (Math.random() * (game.board.sizeY - 4)) + game.board.y + 1;
+    s.speedX = 3;
     s.isActive = true;
     s.dx = randFromInterval(-1,1);
     s.influencedByGravity = true;
-    s.speedY = s.speedX;
+    s.speedY = Math.sqrt(2*game.gravity*(game.board.y + game.board.sizeY - s.y)) / 2;
     s.loopCount = 0;
 }
 
@@ -161,8 +161,15 @@ public void randomDirection(TGame game, TSquare s) {
     }
 }
 
+void checkBoarders(TGame game, TSquare s) {
+    double minY = game.board.y + 1;
+    double maxY = game.board.y + game.board.sizeY - s.size - 1;
+    if (s.y < minY) s.y = minY;
+    if (s.y > maxY) s.y = maxY;
+}
+
 public void randomDirection(TGame game, TSquare s1, TSquare s2) {
-    while ((s1.dy == 0 & s1.dx == 0) || nextStepBoardCollision(game, s1) || nextStepBoardCollision(game, s2) || nextStepSquaresCollision(s1, s2)) {
+    while ((s1.dy == 0 & s1.dx == 0) || nextStepBoardCollision(game, s1) || nextStepBoardCollision(game, s2) || nextStepSquaresCollision(game, s1, s2)) {
         s1.dx = randFromInterval(-1, 1);
         s1.dy = randFromInterval(-1, 1);
         s2.dx = randFromInterval(-1, 1);
@@ -172,7 +179,7 @@ public void randomDirection(TGame game, TSquare s1, TSquare s2) {
 
 public  boolean hitAnyPlayer(TPlayer p, TGame game) {
     for (int i = 0; i < game.playerCount; i++) {
-        if (nextStepSquaresCollision(p.square, game.players[i].square) && p != game.players[i]) return true;
+        if (nextStepSquaresCollision(game, p.square, game.players[i].square) && p != game.players[i]) return true;
     }
     return false;
 }
@@ -208,20 +215,19 @@ public void drawBoard(TGame game) {
 }
 
 
-boolean nextStepSquaresCollision(TSquare s1, TSquare s2){
-    int nextS1LeftX = (int)(s1.x + s1.speedX*s1.dx);
-    int nextS2LettX = (int)(s2.x + s2.speedX*s2.dx);
+boolean nextStepSquaresCollision(TGame game, TSquare s1, TSquare s2){
+    int nextS1LeftX = (int)(s1.x + s1.speedX * s1.dx);
+    int nextS2LeftX = (int)(s2.x + s2.speedX * s2.dx);
     int nextS1RightX = nextS1LeftX + s1.size - 1;
-    int nextS2RightX = nextS2LettX + s2.size - 1;
+    int nextS2RightX = nextS2LeftX + s2.size - 1;
+
     int nextS1UpY = (int)(s1.y + s1.speedY);
     int nextS2UpY = (int)(s2.y + s2.speedY);
     int nextS1DownY = nextS1UpY + s1.size - 1;
     int nextS2DownY = nextS2UpY + s2.size - 1;
 
-    return ((nextS1RightX >= nextS2LettX &&
-            nextS1LeftX <= nextS2RightX) &&
-            (nextS1DownY >= nextS2UpY &&
-                    nextS1UpY <= nextS2DownY));
+    return ((nextS1RightX >= nextS2LeftX && nextS1LeftX <= nextS2RightX) &&
+            (nextS1DownY >= nextS2UpY && nextS1UpY <= nextS2DownY));
 }
 
 void updatePlayerPos(TPlayer player){
@@ -277,16 +283,16 @@ boolean isSquareBeingEaten(TSquare s1, TSquare s2){
 
 
 void bounceSquares(TSquare s1, TSquare s2) {
-//    double tempSpeedY = s1.speedY;
-//    int tempDX = s1.dx;
-//    s1.speedY = s2.speedY;
-//    s2.speedY = tempSpeedY;
-//    s1.dx = s2.dx;
-//    s2.dx = tempDX;
-    s1.dx *= -1;
-    s2.dx *= -1;
-    s1.speedY *= -1;
-    s2.speedY *= -1;
+    double tempSpeedY = s1.speedY;
+    int tempDX = s1.dx;
+    s1.speedY = s2.speedY;
+    s2.speedY = tempSpeedY;
+    s1.dx = s2.dx;
+    s2.dx = tempDX;
+//        s1.dx *= -1;
+//        s2.dx *= -1;
+//        s1.speedY *= -1;
+//        s2.speedY *= -1;
 }
 
 
@@ -294,44 +300,63 @@ public void updateSquaresXY(TGame game) {
     TSquare[] s = game.squares;
 
     for (int i = 0; i < game.squaresCount; i++) {
-        if (!s[i].isActive) continue;
-        draw_frame_c((int)s[i].x, (int)s[i].y, s[i].size, ' ');
+        if (s[i].isActive && s[i].influencedByGravity) {
+            s[i].speedY += game.gravity;
+        }
+    }
 
-        s[i].speedY += game.gravity;
-        double nextX = s[i].x + s[i].speedX*s[i].dx;
+    for (int i = 0; i < game.squaresCount; i++) {
+        if (!s[i].isActive) continue;
+
+        draw_frame_c((int) s[i].x, (int) s[i].y, s[i].size, ' ');
+
+        double nextX = s[i].x + s[i].speedX * s[i].dx;
         double nextY = s[i].y + s[i].speedY;
+
         if (hitFloor(game, s[i], nextY)) {
-            s[i].dx = randFromInterval(-1,1);
             nextY = game.board.y + game.board.sizeY - s[i].size - 1;
             s[i].speedY *= -1;
-        }
-        if(hitCeil(game, s[i], nextY)){
-            nextY = game.board.y + 1;
             s[i].dx = randFromInterval(-1,1);
+        }
+        if (hitCeil(game, s[i], nextY)) {
+            nextY = game.board.y + 1;
             s[i].speedY *= -1;
-        }
+            s[i].dx = randFromInterval(-1,1);
 
-        if(hitLeftOrRight(game, s[i],nextX)){
+        }
+        if (hitLeftOrRight(game, s[i], nextX)) {
             s[i].dx *= -1;
-            nextX = s[i].x + s[i].dx*s[i].speedX;
+            nextX = s[i].x + s[i].dx * s[i].speedX;
         }
-
-        for (int j = 0; j < game.squaresCount; j++) {
-            if (nextStepSquaresCollision(s[i], s[j]) && i != j && s[i].isActive && s[j].isActive) {
-                bounceSquares(s[i], s[j]);
-            }
-        }
-
 
         s[i].x = nextX;
         s[i].y = nextY;
-
-        setfgcolor(s[i].color);
-        draw_frame_c((int) s[i].x, (int) s[i].y, s[i].size, '#');
-
-
-
     }
+
+    for (int i = 0; i < game.squaresCount; i++) {
+        for (int j = i + 1; j < game.squaresCount; j++) {
+            if (!s[i].isActive || !s[j].isActive) continue;
+
+            if (isSquareBeingEaten(s[i], s[j])) {
+                //if square will be pushed outside then it sticks to the borders
+                double minY = game.board.y + 1;
+                double maxY = game.board.y + game.board.sizeY - s[i].size - 1;
+
+                if (s[i].y <= s[j].y) {
+                    double nextY = s[j].y - s[i].size;
+                    s[i].y = Math.max(nextY, minY);
+                } else {
+                    double nextY = s[i].y - s[j].size;
+                    s[j].y = Math.max(nextY, minY);
+                }
+                bounceSquares(s[i], s[j]);
+
+                bounceSquares(s[i], s[j]);
+            }
+        }
+    }
+
+
 }
 
 TSquare findClosestSquare(TGame game, TPlayer player){
@@ -615,10 +640,10 @@ void CONTROLLER(TGame game){
 void MODEL(TGame game, String pressedKey){
     TPlayer movedPlayer = interpretKey(game, pressedKey);
     if(movedPlayer.control == 0) updatePlayerXY(game, movedPlayer);
-    VIEW(game, movedPlayer);
     checkPlayersControl(game);
-    updatePlayerPoints(game);
     updateSquaresXY(game);
+    updatePlayerPoints(game);
+    VIEW(game, movedPlayer);
     if(game.activeSquares == 0) game.winnerGameFlag = true;
     if(game.time == 0) game.timeEndFlag = true;
 }
@@ -649,8 +674,8 @@ void startGame(TGame game){
 
 void main(){
     TGame game = createElements(TGame.class);
-    setGame(game, createBoard(1,1,120,30));
-    for(int i = 0; i < 2; i++){
+    setGame(game, createBoard(1,1,150,40));
+    for(int i = 0; i < 3; i++){
         addSquare(game, createSquare(game, SLOW));
         addSquare(game, createSquare(game, FAST));
         addSquare(game, createSquare(game, SLOWEST));
