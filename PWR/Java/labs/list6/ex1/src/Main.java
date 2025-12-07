@@ -5,13 +5,17 @@ import static java.lang.IO.println;
 import static term.term.*;
 
 final int MAX_POINTS = 2000;
-
+final int WRAP = 1;
+final int NOT_WRAP = 0;
+final int TOWARDS_END = 0;
+final int TOWARDS_BEGINNING = 1;
 
 public static class TCornerPath {
-    TPoint[] cornerPoints; //stores only corners, beggining and end
-    int cornerPointsCount;
-    int circuit;
-
+    TPoint[] corners; //stores only corners, beggining and end
+    int cornersCount;
+    int realPointsCount;
+    int wrapped;
+    int stringDirection;
 }
 
 
@@ -27,8 +31,11 @@ public TCornerPath createPath(){
 }
 
 public void setCornerPath(TCornerPath path) {
-    path.cornerPoints = new TPoint[MAX_POINTS];
-    path.cornerPointsCount = 0;
+    path.corners = new TPoint[MAX_POINTS];
+    path.cornersCount = 0;
+    path.realPointsCount = 0;
+    path.wrapped = NOT_WRAP;
+    path.stringDirection = TOWARDS_END;
 }
 
 public TPoint point(int x, int y) {
@@ -44,39 +51,84 @@ public void setPoint(TPoint point, int x, int y) {
 
 public void printPathArray(TCornerPath cornerPath){
     print("[");
-    for(int i = 0; i < cornerPath.cornerPointsCount; i++){
-        TPoint currPoint = cornerPath.cornerPoints[i];
+    for(int i = 0; i < cornerPath.cornersCount; i++){
+        TPoint currPoint = cornerPath.corners[i];
         print("(" + currPoint.x + "," + currPoint.y + "), ");
     }
     print("]");
 }
 
-public void addPoint(TCornerPath cornerPath, TPoint point){
-    int lastIdx = cornerPath.cornerPointsCount - 1;
-    cornerPath.cornerPoints[lastIdx + 1] = point;
-    if(cornerPath.cornerPointsCount == 1) cornerPath.circuit += countSegmentLength(cornerPath.cornerPoints[lastIdx], point) + 1;
-    if(cornerPath.cornerPointsCount > 1) cornerPath.circuit += countSegmentLength(cornerPath.cornerPoints[lastIdx], point);
-    cornerPath.cornerPointsCount++;
+public void addCorner(TCornerPath cornersPath, TPoint newCorner){
+    int prevLastIdx = cornersPath.cornersCount - 1;
+    cornersPath.corners[prevLastIdx + 1] = newCorner;
+    cornersPath.cornersCount++;
+    TPoint prevLastCorner = cornersPath.corners[Math.max(prevLastIdx, 0)];
+
+    if(cornersPath.cornersCount == 1) cornersPath.realPointsCount = 1;
+    if(cornersPath.cornersCount >= 2) cornersPath.realPointsCount += countSegmentLength(prevLastCorner, newCorner);
+}
+
+public boolean isPointBetweenCorners(TPoint targetPoint, TPoint firstCorner, TPoint secondCorner){
+    if(arePointsEqual(targetPoint, firstCorner) || arePointsEqual(targetPoint,secondCorner)) return true;
+    if(!isSegmentValid(firstCorner,secondCorner)) return false;
+
+    TPoint leftCorner = (firstCorner.x <= secondCorner.x)
+            ? firstCorner
+            : secondCorner;
+    TPoint rightCorner = (firstCorner.x >= secondCorner.x)
+            ? firstCorner
+            : secondCorner;
+    TPoint topCorner = (firstCorner.y <= secondCorner.y)
+            ? firstCorner
+            : secondCorner;
+    TPoint bottomCorner = (firstCorner.y >= secondCorner.y)
+            ? firstCorner
+            : secondCorner;
+
+    boolean sameColumn = targetPoint.x == firstCorner.x &&
+                         targetPoint.x == secondCorner.x &&
+                         targetPoint.y >= topCorner.y &&
+                         targetPoint.y <= bottomCorner.y;
+
+    boolean sameRow = targetPoint.y == firstCorner.y &&
+                      targetPoint.y == secondCorner.y &&
+                      targetPoint.x >= leftCorner.x &&
+                      targetPoint.x <= rightCorner.x;
+
+
+    boolean onDiagonal = Math.abs(targetPoint.x - leftCorner.x) == Math.abs(targetPoint.y - leftCorner.y) &&
+                         Math.abs(targetPoint.x - rightCorner.x) == Math.abs(targetPoint.y - rightCorner.y) &&
+                         targetPoint.x >= leftCorner.x &&
+                         targetPoint.x <= rightCorner.x &&
+                         targetPoint.y >= topCorner.y &&
+                         targetPoint.y <= bottomCorner.y;
+
+
+    return sameColumn || sameRow || onDiagonal;
+
 }
 
 public boolean arePointsEqual(TPoint point1, TPoint point2){
     return point1.x == point2.x && point1.y == point2.y;
 }
 
-public boolean isPointInPath(TCornerPath cornerPath, TPoint point){
-    int lastIdx = cornerPath.cornerPointsCount - 1;
-    for(int i = 0; i <= lastIdx; i++){
-        TPoint currPoint = cornerPath.cornerPoints[i];
-        if(arePointsEqual(currPoint, point)) return true;
+public boolean isPointInPath(TCornerPath cornerPath, TPoint targetPoint){
+    if(cornerPath.cornersCount == 0) return false;
+    if(cornerPath.cornersCount == 1) return arePointsEqual(targetPoint, cornerPath.corners[0]);
+
+    for(int i = 0; i < cornerPath.cornersCount - 1; i++){
+        TPoint firstCorner = cornerPath.corners[i];
+        TPoint secondCorner = cornerPath.corners[i+1];
+        if(isPointBetweenCorners(targetPoint, firstCorner, secondCorner)) return true;
     }
     return false;
 }
 
 public TPoint getLastPointFromPath(TCornerPath cornerPath){
-    return cornerPath.cornerPoints[cornerPath.cornerPointsCount - 1];
+    return cornerPath.corners[cornerPath.cornersCount - 1];
 }
 
-public boolean canSegmentBeDrawn(TPoint point1, TPoint point2){
+public boolean isSegmentValid(TPoint point1, TPoint point2){
     int xDifference = Math.abs(point1.x - point2.x);
     int yDifference = Math.abs(point1.y - point2.y);
     return point1.x == point2.x || point1.y == point2.y || xDifference == yDifference;
@@ -93,41 +145,41 @@ public void drawPoint(TPoint point, char c){
     print(c);
 }
 
-public void tryToDrawSegment(TPoint point1, TPoint point2, char c){
-    if(canSegmentBeDrawn(point1, point2)){
-        int dx = getDirection(point1.x, point2.x);
-        int dy = getDirection(point1.y, point2.y);
-        TPoint currPoint = point(point1.x, point1.y);
-        while(!arePointsEqual(currPoint, point2)){
-            drawPoint(currPoint, c);
-            currPoint.x += dx;
-            currPoint.y += dy;
-        }
-        drawPoint(point2, c);
+public void tryToDrawSegment(TPoint firstCorner, TPoint secondCorner, char c){
+    if(!isSegmentValid(firstCorner, secondCorner)){
+        drawPoint(firstCorner, c);
+        drawPoint(secondCorner, c);
+        return;
     }
+    int dx = getDirection(firstCorner.x, secondCorner.x);
+    int dy = getDirection(firstCorner.y, secondCorner.y);
+    TPoint tempPoint = point(firstCorner.x, firstCorner.y);
+
+    while(!arePointsEqual(tempPoint, secondCorner)){
+        drawPoint(tempPoint, c);
+        tempPoint.x += dx;
+        tempPoint.y += dy;
+    }
+    drawPoint(tempPoint, c);
 }
 
 public void drawCornerPath(TCornerPath cornerPath, char c){
-    int lastIdx = cornerPath.cornerPointsCount - 1;
-    for(int i = 0; i < lastIdx; i++){
-        TPoint point1 = cornerPath.cornerPoints[i];
-        TPoint point2 = cornerPath.cornerPoints[i + 1];
-        tryToDrawSegment(point1, point2, c);
+    for(int i = 0; i < cornerPath.cornersCount -1; i++){
+        tryToDrawSegment(cornerPath.corners[i], cornerPath.corners[i+1], c);
     }
 }
 
-public void addCornerToPathIfPossible(TCornerPath cornerPath, TPoint newPoint){
-    TPoint lastPoint = cornerPath.cornerPoints[cornerPath.cornerPointsCount - 1];
-    if(canSegmentBeDrawn(lastPoint, newPoint)) addPoint(cornerPath, newPoint);
-}
 
-public void joinPaths(TCornerPath cornerPath, TCornerPath newCornerPath){
-    TPoint lastCorner = cornerPath.cornerPoints[cornerPath.cornerPointsCount - 1];
-    TPoint firstCorner = newCornerPath.cornerPoints[0];
-    int lastIdxNewPath = newCornerPath.cornerPointsCount - 1;
-    if(!arePointsEqual(lastCorner,firstCorner)) addPoint(cornerPath, firstCorner);
-    for(int i = 1; i <= lastIdxNewPath; i++){
-        addPoint(cornerPath, newCornerPath.cornerPoints[i]);
+
+public void addPath(TCornerPath basePath, TCornerPath addPath){
+    int addCornersCount = addPath.cornersCount;
+    TPoint lastBaseCorner = getLastPointFromPath(basePath);
+    TPoint firstAddCorner = addPath.corners[0];
+
+    if(addCornersCount == 0) return;
+    if(!arePointsEqual(firstAddCorner, lastBaseCorner)) addCorner(basePath, firstAddCorner);
+    for(int i = 1; i < addPath.cornersCount; i++){
+        addCorner(basePath, addPath.corners[i]);
     }
 }
 
@@ -135,56 +187,27 @@ public int countSegmentLength(TPoint point1, TPoint point2){
     return Math.max(Math.abs(point1.x - point2.x), Math.abs(point1.y - point2.y));
 }
 
-public int addSegment(TPoint[] path, int lastIdx, TPoint point1, TPoint point2){
-    int dx = getDirection(point1.x, point2.x);
-    int dy = getDirection(point1.y, point2.y);
-    TPoint tempPoint = point(point1.x, point1.y);
-    while(!arePointsEqual(tempPoint, point2)){
-        path[lastIdx] = point(tempPoint.x, tempPoint.y);
-        lastIdx++;
-        tempPoint.x += dx;
-        tempPoint.y += dy;
-    }
-    path[lastIdx] = tempPoint;
-
-    return lastIdx;
+public void addSegment(TCornerPath cornerPath ,TPoint point1, TPoint point2){
+    if(!isSegmentValid(point1, point2)) return;
+    TPoint lastPoint = getLastPointFromPath(cornerPath);
+    if(!arePointsEqual(point1, lastPoint)) addCorner(cornerPath, point1);
+    addCorner(cornerPath, point2);
 }
 
-
-public TPoint[] createPath(TCornerPath cornerPath){
-    TPoint[] path = new TPoint[cornerPath.circuit];
-    int lastIdx = 0;
-    for(int i = 0; i < cornerPath.cornerPointsCount - 1; i++){
-        lastIdx = addSegment(path, lastIdx, cornerPath.cornerPoints[i], cornerPath.cornerPoints[i+1]);
+public void addMultipleSegments(TCornerPath cornerPath ,TPoint ... corners) {
+    for (TPoint corner : corners) {
+        int lastCornerIdx = cornerPath.cornersCount - 1;
+        if (lastCornerIdx < 0 || !arePointsEqual(corner, cornerPath.corners[lastCornerIdx])) addCorner(cornerPath,corner);
     }
-    return path;
-
 }
+
 
 public void writeForward(TCornerPath cornerPath, String text, int startIdx, int wrapped){
-    TPoint[] path = createPath(cornerPath);
-    int currTextIdx = 0;
-    if(wrapped == 1) startIdx %= cornerPath.circuit;
-    while(currTextIdx < text.length() && startIdx < cornerPath.circuit && startIdx >= 0){
-        gotoxy(path[startIdx].x, path[startIdx].y);
-        print(text.charAt(currTextIdx));
-        startIdx++;
-        if(wrapped == 1) startIdx = (startIdx) % cornerPath.circuit;
-        currTextIdx++;
-    }
+
 }
 
 public void writeBackward(TCornerPath cornerPath, String text, int startIdx, int wrapped){
-    TPoint[] path = createPath(cornerPath);
-    int currTextIdx = 0;
-    if(wrapped == 1) startIdx = ((startIdx % cornerPath.circuit) + cornerPath.circuit) % cornerPath.circuit;
-    while(currTextIdx < text.length() && startIdx >= 0 && startIdx < cornerPath.circuit){
-        gotoxy(path[startIdx].x, path[startIdx].y);
-        print(text.charAt(currTextIdx));
-        startIdx--;
-        if(wrapped == 1) startIdx = ((startIdx % cornerPath.circuit) + cornerPath.circuit) % cornerPath.circuit;
-        currTextIdx++;
-    }
+
 }
 
 public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx, int direction, int wrapped){
@@ -194,26 +217,21 @@ public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx,
 
 
 void main() {
+    clrscr();
     TCornerPath cornerPath1 = createElements(TCornerPath.class);
     setCornerPath(cornerPath1);
-    addPoint(cornerPath1, point(1,1));
-    addPoint(cornerPath1, point(1,10));
-    addPoint(cornerPath1, point(10,10));
-    addPoint(cornerPath1, point(10,1));
+
+    addMultipleSegments(cornerPath1, point(1,1), point(1,10), point(10,10), point(10,1), point(1,1), point(2,15), point(2,18), point(5,5), point(7,6));
 
 
+    printPathArray(cornerPath1);
 //    writeForward(cornerPath1, "hello yusuf", 21, 1);
-    writeBackward(cornerPath1, "hello yusuf", 2, 0);
-//    TCornerPath cornerPath2 = createElements(TCornerPath.class);
-//    setCornerPath(cornerPath2);
-//    addPoint(cornerPath2, point(52,3));
-//    addPoint(cornerPath2, point(55,2));
-//    addPoint(cornerPath2, point(50,2));
-//
-//
-//
-//    joinPaths(cornerPath1, cornerPath2);
-//    drawCornerPath(cornerPath1, '*');
+//    writeBackward(cornerPath1, "hello yusuf", 2, 0);
+    TCornerPath cornerPath2 = createElements(TCornerPath.class);
+    setCornerPath(cornerPath2);
+
+
+    drawCornerPath(cornerPath1, '*');
     readkey();
 
 
