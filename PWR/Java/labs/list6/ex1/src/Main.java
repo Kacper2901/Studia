@@ -58,6 +58,12 @@ public void printPathArray(TCornerPath cornerPath){
     print("]");
 }
 
+public int safeModulo(int n, int divisor){
+    return (n%divisor + divisor) % divisor;
+}
+
+
+
 public void addCorner(TCornerPath cornersPath, TPoint newCorner){
     int prevLastIdx = cornersPath.cornersCount - 1;
     cornersPath.corners[prevLastIdx + 1] = newCorner;
@@ -170,7 +176,6 @@ public void drawCornerPath(TCornerPath cornerPath, char c){
 }
 
 
-
 public void addPath(TCornerPath basePath, TCornerPath addPath){
     int addCornersCount = addPath.cornersCount;
     TPoint lastBaseCorner = getLastPointFromPath(basePath);
@@ -201,18 +206,163 @@ public void addMultipleSegments(TCornerPath cornerPath ,TPoint ... corners) {
     }
 }
 
-
-public void writeForward(TCornerPath cornerPath, String text, int startIdx, int wrapped){
-
+String sliceString(String text, int leftIdx, int rigthIdx){
+    String newText = "";
+    for (int i = 0; i < text.length(); i ++){
+        if(i >= leftIdx && i <= rigthIdx) newText += text.charAt(i);
+    }
+    return newText;
 }
 
-public void writeBackward(TCornerPath cornerPath, String text, int startIdx, int wrapped){
 
+public void writeTowardsEnd(TCornerPath cornerPath, String text, int startIdx){
+    if(text.length() > cornerPath.realPointsCount)
+        text = sliceString(text,0, cornerPath.realPointsCount - 1);
+    if (cornerPath.cornersCount <= 1) return;
+    if (text.length() == 0) return;
+    int currRealIdx = -1;
+    int printedChars = 0;
+    int totalPoints = cornerPath.realPointsCount;
+
+    if (cornerPath.wrapped == WRAP) {
+        startIdx = safeModulo(startIdx, totalPoints);
+    }
+    else {
+        if (startIdx >= totalPoints) return;
+        if(startIdx< 0){
+            text = sliceString(text, Math.abs(startIdx), text.length() - 1);
+            startIdx = 0;
+        }
+    }
+    int currCornerIdx = 0;
+
+    TPoint tempPoint = point(cornerPath.corners[currCornerIdx].x, cornerPath.corners[currCornerIdx].y);
+    TPoint nextCorner = cornerPath.corners[currCornerIdx+1];
+    int dx = getDirection(tempPoint.x, nextCorner.x);
+    int dy = getDirection(tempPoint.y, nextCorner.y);
+
+    while (printedChars < text.length()) {
+
+        if (currCornerIdx >= cornerPath.cornersCount - 1) {
+            if (cornerPath.wrapped == NOT_WRAP) return;
+            currCornerIdx = 0;
+        }
+
+        while (true) {
+            delay(250);
+
+            currRealIdx++;
+
+            if (currRealIdx >= startIdx) {
+                drawPoint(tempPoint, text.charAt(printedChars));
+                printedChars++;
+                if (printedChars >= text.length()) return;
+            }
+            if(arePointsEqual(tempPoint, nextCorner)) break;
+            tempPoint.x += dx;
+            tempPoint.y += dy;
+
+        }
+
+        currCornerIdx++;
+        if (currCornerIdx >= cornerPath.cornersCount - 1) {
+            if (cornerPath.wrapped == NOT_WRAP) return;
+            currCornerIdx = 0;
+            tempPoint = point(cornerPath.corners[0].x, cornerPath.corners[0].y);
+            nextCorner = cornerPath.corners[currCornerIdx+1];
+            dx = getDirection(tempPoint.x, nextCorner.x);
+            dy = getDirection(tempPoint.y, nextCorner.y);
+            continue;
+        }
+        nextCorner = cornerPath.corners[currCornerIdx+1];
+        dx = getDirection(tempPoint.x, nextCorner.x);
+        dy = getDirection(tempPoint.y, nextCorner.y);
+        tempPoint.x += dx;
+        tempPoint.y += dy;
+
+    }
 }
 
-public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx, int direction, int wrapped){
-    if(direction == 1) writeForward(cornerPath, text, startIdx, wrapped);
-    if(direction == 0) writeBackward(cornerPath, text, startIdx, wrapped);
+
+    public void writeTowardsBeginning(TCornerPath cornerPath, String text, int startIdx){
+        startIdx = cornerPath.realPointsCount - 1 - startIdx;
+        if(text.length() > cornerPath.realPointsCount)
+            text = sliceString(text, 0, cornerPath.realPointsCount - 1);
+        if (cornerPath.cornersCount <= 1) return;
+        if (text.length() == 0) return;
+
+        int currRealIdx = -1;
+        int printedChars = 0;
+        int totalPoints = cornerPath.realPointsCount;
+
+        if (cornerPath.wrapped == WRAP) {
+            startIdx = safeModulo(startIdx, totalPoints);
+        } else {
+            if (startIdx >= totalPoints) return;
+            if (startIdx < 0) {
+                text = sliceString(text, Math.abs(startIdx), text.length() - 1);
+                startIdx = 0;
+            }
+        }
+
+        int currCornerIdx = cornerPath.cornersCount - 1;
+
+        TPoint tempPoint = point(cornerPath.corners[currCornerIdx].x,
+                cornerPath.corners[currCornerIdx].y);
+        TPoint nextCorner = cornerPath.corners[currCornerIdx - 1];
+        int dx = getDirection(tempPoint.x, nextCorner.x);
+        int dy = getDirection(tempPoint.y, nextCorner.y);
+
+        while (printedChars < text.length()) {
+
+            if (currCornerIdx <= 0) {
+                if (cornerPath.wrapped == NOT_WRAP) return;
+                currCornerIdx = cornerPath.cornersCount - 1;
+            }
+
+            while (true) {
+                delay(250);
+
+                currRealIdx++;
+
+                if (currRealIdx >= startIdx) {
+                    drawPoint(tempPoint, text.charAt(printedChars));
+                    printedChars++;
+                    if (printedChars >= text.length()) return;
+                }
+
+                if (arePointsEqual(tempPoint, nextCorner)) break;
+
+                tempPoint.x += dx;
+                tempPoint.y += dy;
+            }
+
+            currCornerIdx--;
+
+            if (currCornerIdx <= 0) {
+                if (cornerPath.wrapped == NOT_WRAP) return;
+                currCornerIdx = cornerPath.cornersCount - 1;
+                tempPoint = point(cornerPath.corners[currCornerIdx].x,
+                        cornerPath.corners[currCornerIdx].y);
+                nextCorner = cornerPath.corners[currCornerIdx - 1];
+                dx = getDirection(tempPoint.x, nextCorner.x);
+                dy = getDirection(tempPoint.y, nextCorner.y);
+                continue;
+            }
+
+            nextCorner = cornerPath.corners[currCornerIdx - 1];
+            dx = getDirection(tempPoint.x, nextCorner.x);
+            dy = getDirection(tempPoint.y, nextCorner.y);
+            tempPoint.x += dx;
+            tempPoint.y += dy;
+        }
+    }
+
+
+public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx){
+    int writingDirection = cornerPath.stringDirection;
+    if(writingDirection == TOWARDS_END) writeTowardsEnd(cornerPath, text, startIdx);
+    if(writingDirection == TOWARDS_BEGINNING) writeTowardsBeginning(cornerPath, text, startIdx);
 }
 
 
@@ -221,17 +371,17 @@ void main() {
     TCornerPath cornerPath1 = createElements(TCornerPath.class);
     setCornerPath(cornerPath1);
 
-    addMultipleSegments(cornerPath1, point(1,1), point(1,10), point(10,10), point(10,1), point(1,1), point(2,15), point(2,18), point(5,5), point(7,6));
+    addMultipleSegments(cornerPath1, point(3,1), point(3,10), point(12,10), point(12,1), point(4,1));
 
 
-    printPathArray(cornerPath1);
-//    writeForward(cornerPath1, "hello yusuf", 21, 1);
+    cornerPath1.wrapped = WRAP;
+    writeTowardsBeginning(cornerPath1, "abcdefghijklmnoprstuwxyzabcdefghijklmnoprstuwxyz", 25);
 //    writeBackward(cornerPath1, "hello yusuf", 2, 0);
     TCornerPath cornerPath2 = createElements(TCornerPath.class);
     setCornerPath(cornerPath2);
 
 
-    drawCornerPath(cornerPath1, '*');
+//    drawCornerPath(cornerPath1, '*');
     readkey();
 
 
