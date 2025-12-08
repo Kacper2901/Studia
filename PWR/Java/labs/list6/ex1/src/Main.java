@@ -18,6 +18,8 @@ public class Main {
         int realPointsCount;
         int wrapped;
         int stringDirection;
+        int string1Idx;
+        int string2Idx;
     }
 
 
@@ -26,13 +28,13 @@ public class Main {
         int y;
     }
 
-    public TCornerPath createPath() {
+    public static TCornerPath createPath() {
         TCornerPath path = new TCornerPath();
         setCornerPath(path);
         return path;
     }
 
-    public void setCornerPath(TCornerPath path) {
+    public static void setCornerPath(TCornerPath path) {
         path.corners = new TPoint[MAX_POINTS];
         path.cornersCount = 0;
         path.realPointsCount = 0;
@@ -40,18 +42,18 @@ public class Main {
         path.stringDirection = TOWARDS_END;
     }
 
-    public TPoint point(int x, int y) {
+    public static TPoint point(int x, int y) {
         TPoint point = new TPoint();
         setPoint(point, x, y);
         return point;
     }
 
-    public void setPoint(TPoint point, int x, int y) {
+    public static void setPoint(TPoint point, int x, int y) {
         point.x = x;
         point.y = y;
     }
 
-    public void printPathArray(TCornerPath cornerPath) {
+    public static void printPathArray(TCornerPath cornerPath) {
         print("[");
         for (int i = 0; i < cornerPath.cornersCount; i++) {
             TPoint currPoint = cornerPath.corners[i];
@@ -60,12 +62,12 @@ public class Main {
         print("]");
     }
 
-    public int safeModulo(int n, int divisor) {
+    public static int safeModulo(int n, int divisor) {
         return (n % divisor + divisor) % divisor;
     }
 
 
-    public void addCorner(TCornerPath cornersPath, TPoint newCorner) {
+    public static void addCorner(TCornerPath cornersPath, TPoint newCorner) {
         int prevLastIdx = cornersPath.cornersCount - 1;
         cornersPath.corners[prevLastIdx + 1] = newCorner;
         cornersPath.cornersCount++;
@@ -75,7 +77,7 @@ public class Main {
         if (cornersPath.cornersCount >= 2) cornersPath.realPointsCount += countSegmentLength(prevLastCorner, newCorner);
     }
 
-    public boolean isPointBetweenCorners(TPoint targetPoint, TPoint firstCorner, TPoint secondCorner) {
+    public static boolean isPointBetweenCorners(TPoint targetPoint, TPoint firstCorner, TPoint secondCorner) {
         if (arePointsEqual(targetPoint, firstCorner) || arePointsEqual(targetPoint, secondCorner)) return true;
         if (!isSegmentValid(firstCorner, secondCorner)) return false;
 
@@ -115,11 +117,11 @@ public class Main {
 
     }
 
-    public boolean arePointsEqual(TPoint point1, TPoint point2) {
+    public static boolean arePointsEqual(TPoint point1, TPoint point2) {
         return point1.x == point2.x && point1.y == point2.y;
     }
 
-    public boolean isPointInPath(TCornerPath cornerPath, TPoint targetPoint) {
+    public static boolean isPointInPath(TCornerPath cornerPath, TPoint targetPoint) {
         if (cornerPath.cornersCount == 0) return false;
         if (cornerPath.cornersCount == 1) return arePointsEqual(targetPoint, cornerPath.corners[0]);
 
@@ -131,33 +133,33 @@ public class Main {
         return false;
     }
 
-    public TPoint getLastPointFromPath(TCornerPath cornerPath) {
+    public static TPoint getLastPointFromPath(TCornerPath cornerPath) {
         return cornerPath.corners[cornerPath.cornersCount - 1];
     }
 
-    public boolean isSegmentValid(TPoint point1, TPoint point2) {
+    public static boolean isSegmentValid(TPoint point1, TPoint point2) {
         int xDifference = Math.abs(point1.x - point2.x);
         int yDifference = Math.abs(point1.y - point2.y);
         return point1.x == point2.x || point1.y == point2.y || xDifference == yDifference;
     }
 
-    public int getDirection(int a, int b) {
+    public static int getDirection(int a, int b) {
         if (b - a > 0) return 1;
         else if (b - a == 0) return 0;
         else return -1;
     }
 
-    public void drawPoint(TPoint point, char c) {
+    public static void drawPoint(TPoint point, char c) {
         gotoxy(point.x, point.y);
         print(c);
     }
 
-    public void drawPointOffset(TPoint point, char c, TPoint offset) {
+    public static void drawPointOffset(TPoint point, char c, TPoint offset) {
         gotoxy(point.x + offset.x, point.y + offset.y);
         print(c);
     }
 
-    public void tryToDrawSegment(TPoint firstCorner, TPoint secondCorner, char c) {
+    public static void tryToDrawSegment(TPoint firstCorner, TPoint secondCorner, char c) {
         if (!isSegmentValid(firstCorner, secondCorner)) {
             drawPoint(firstCorner, c);
             drawPoint(secondCorner, c);
@@ -175,14 +177,14 @@ public class Main {
         drawPoint(tempPoint, c);
     }
 
-    public void drawCornerPath(TCornerPath cornerPath, char c) {
+    public static void drawCornerPath(TCornerPath cornerPath, char c) {
         for (int i = 0; i < cornerPath.cornersCount - 1; i++) {
             tryToDrawSegment(cornerPath.corners[i], cornerPath.corners[i + 1], c);
         }
     }
 
 
-    public void addPath(TCornerPath basePath, TCornerPath addPath) {
+    public static void addPath(TCornerPath basePath, TCornerPath addPath) {
         int addCornersCount = addPath.cornersCount;
         TPoint lastBaseCorner = getLastPointFromPath(basePath);
         TPoint firstAddCorner = addPath.corners[0];
@@ -194,18 +196,18 @@ public class Main {
         }
     }
 
-    public int countSegmentLength(TPoint point1, TPoint point2) {
+    public static int countSegmentLength(TPoint point1, TPoint point2) {
         return Math.max(Math.abs(point1.x - point2.x), Math.abs(point1.y - point2.y));
     }
 
-    public void addSegment(TCornerPath cornerPath, TPoint point1, TPoint point2) {
+    public static void addSegment(TCornerPath cornerPath, TPoint point1, TPoint point2) {
         if (!isSegmentValid(point1, point2)) return;
         TPoint lastPoint = getLastPointFromPath(cornerPath);
         if (!arePointsEqual(point1, lastPoint)) addCorner(cornerPath, point1);
         addCorner(cornerPath, point2);
     }
 
-    public void addMultipleSegments(TCornerPath cornerPath, TPoint... corners) {
+    public static void addMultipleSegments(TCornerPath cornerPath, TPoint... corners) {
         for (TPoint corner : corners) {
             int lastCornerIdx = cornerPath.cornersCount - 1;
             if (lastCornerIdx < 0 || !arePointsEqual(corner, cornerPath.corners[lastCornerIdx]))
@@ -213,7 +215,7 @@ public class Main {
         }
     }
 
-    String sliceString(String text, int leftIdx, int rigthIdx) {
+    static String  sliceString(String text, int leftIdx, int rigthIdx) {
         String newText = "";
         for (int i = 0; i < text.length(); i++) {
             if (i >= leftIdx && i <= rigthIdx) newText += text.charAt(i);
@@ -222,7 +224,7 @@ public class Main {
     }
 
 
-    public void writeTowardsEnd(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
+    public static void writeTowardsEnd(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
         if (text.length() > cornerPath.realPointsCount)
             text = sliceString(text, 0, cornerPath.realPointsCount - 1);
         if (cornerPath.cornersCount <= 1) return;
@@ -255,7 +257,6 @@ public class Main {
             }
 
             while (true) {
-                delay(250);
 
                 currRealIdx++;
 
@@ -290,7 +291,7 @@ public class Main {
     }
 
 
-    public void writeTowardsBeginning(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
+    public static void writeTowardsBeginning(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
         startIdx = cornerPath.realPointsCount - 1 - startIdx;
         if (text.length() > cornerPath.realPointsCount)
             text = sliceString(text, 0, cornerPath.realPointsCount - 1);
@@ -327,7 +328,6 @@ public class Main {
             }
 
             while (true) {
-                delay(250);
 
                 currRealIdx++;
 
@@ -365,39 +365,133 @@ public class Main {
     }
 
 
-    public void writeStringOnPathOffset(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
+    public static void writeStringOnPathOffset(TCornerPath cornerPath, String text, int startIdx, TPoint offset) {
         int writingDirection = cornerPath.stringDirection;
         if (writingDirection == TOWARDS_END) writeTowardsEnd(cornerPath, text, startIdx, offset);
         if (writingDirection == TOWARDS_BEGINNING) writeTowardsBeginning(cornerPath, text, startIdx, offset);
     }
 
 
-    public void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx) {
+    public static void writeStringOnPath(TCornerPath cornerPath, String text, int startIdx) {
         int writingDirection = cornerPath.stringDirection;
         if (writingDirection == TOWARDS_END) writeTowardsEnd(cornerPath, text, startIdx, point(0, 0));
         if (writingDirection == TOWARDS_BEGINNING) writeTowardsBeginning(cornerPath, text, startIdx, point(0, 0));
     }
 
 
-    static void main(String[] args) {
-        clrscr();
-        Main main = new Main();
-        TCornerPath cornerPath1 = createElements(TCornerPath.class);
-        main.setCornerPath(cornerPath1);
 
-        main.addMultipleSegments(cornerPath1, main.point(3, 1), main.point(3, 10), main.point(12, 10), main.point(12, 1), main.point(4, 1));
+    static boolean hitStrings(int s1_first, int s1_last, int s2_first, int s2_last){
+        return (Math.abs(s1_first - s2_first) < 2 || Math.abs(s1_last - s2_last) < 2) || Math.abs(s1_first - s1_last) < 2 || Math.abs(s1_first - s2_last) < 2;
+    }
 
-
-        cornerPath1.wrapped = WRAP;
-        main.writeStringOnPathOffset(cornerPath1, "abcdefghijklmnoprstuwxyzabcdefghijklmnoprstuwxyz", 25, main.point(2, 2));
-//    writeBackward(cornerPath1, "hello yusuf", 2, 0);
-        TCornerPath cornerPath2 = createElements(TCornerPath.class);
-        main.setCornerPath(cornerPath2);
+    static void updateSmallFrame(TCornerPath path, int bee1Idx, int bee2Idx){
+        String text1 = "*Bee ready!";
+        writeStringOnPath(path,text1, bee1Idx);
+        writeStringOnPath(path,text1 ,bee2Idx);
+    }
 
 
-//    drawCornerPath(cornerPath1, '*');
-        readkey();
+
+    static void updateBigFrame(TCornerPath path, int startIdx, int welcomeIdx, String welcome, String start){
+
+
+        path.stringDirection = (path.stringDirection + 1) % 2;
+        writeStringOnPath( path, welcome,welcomeIdx);
+        path.stringDirection = (path.stringDirection + 1) % 2;
+        writeStringOnPath(path,start,startIdx);
 
 
     }
+
+
+    static void main(String[] args) {
+        clrscr();
+        Main main = new Main();
+        clrscr();
+        TCornerPath path1 = createElements(TCornerPath.class);
+        TCornerPath path2 = createElements(TCornerPath.class);
+
+        setCornerPath(path1);
+        setCornerPath(path2);
+        path1.string1Idx = 0;
+        path1.string1Idx = path1.realPointsCount / 2;
+
+        String welcomeClock = "*>>Welcome to our game!<<";
+        String welcomeAntiClock = ">>Welcome to our game!<<*";
+        String startAntiClock = "*>>Press s to start<<";
+        String startClock = ">>Press s to start<<*";
+
+        String currWelcome = welcomeAntiClock;
+        String currStart = startClock;
+
+
+        addMultipleSegments(path1, point(1, 1), point(120, 1), point(120, 30), point(1, 30), point(1, 1));
+        addMultipleSegments(path2, point(50, 7), point(70, 7), point(70, 22), point(50, 22), point(50, 7));
+        setfgcolor(yellow);
+        drawCornerPath(path1, '*');
+        setfgcolor(green);
+        drawCornerPath(path2, '*');
+
+        path1.wrapped = 1;
+        path1.stringDirection = 0;
+        path2.wrapped = 1;
+        int currBeeIdx = 0;
+
+        int currWelcomeIdx = (120 - 24) / 2;
+        int lastWelcomeIdx = currWelcomeIdx + 24;
+        int currStartIdx = 270 - currWelcomeIdx + 1;
+        int lastStartIdx = currStartIdx - 20;
+
+        int welcomeDirection = -1;
+        int startDirection = 1;
+        path1.stringDirection = 1;
+        int flag = 0;
+
+
+        while (true){
+            if (flag == 0) {
+                setfgcolor(green);
+                updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.realPointsCount / 2);
+                setfgcolor(yellow);
+                updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeAntiClock, startClock);
+            }
+            else{
+                setfgcolor(green);
+                updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.realPointsCount / 2);
+                setfgcolor(yellow);
+                updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeClock, startAntiClock);
+            }
+
+            delay(50);
+            currBeeIdx++;
+            if(hitStrings(currStartIdx, lastStartIdx, currWelcomeIdx, lastWelcomeIdx)){
+
+                if (flag == 0) {
+                    setfgcolor(green);
+                    updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.realPointsCount / 2);
+                    setfgcolor(yellow);
+                    updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeClock, startAntiClock);
+                }
+                else{
+                    setfgcolor(green);
+                    updateSmallFrame(path2, currBeeIdx, currBeeIdx + path2.realPointsCount / 2);
+                    setfgcolor(yellow);
+                    updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeAntiClock, startClock);
+                }
+                flag = (flag + 1)%2;
+                startDirection*=-1;
+                welcomeDirection*=-1;
+
+
+            }
+            delay(50);
+            currStartIdx = (((currStartIdx + startDirection) % path1.realPointsCount) +path1.realPointsCount) % path1.realPointsCount;
+            currWelcomeIdx = (((currWelcomeIdx + welcomeDirection) % path1.realPointsCount) +path1.realPointsCount) % path1.realPointsCount;
+            lastWelcomeIdx = (((lastWelcomeIdx + welcomeDirection) % path1.realPointsCount) +path1.realPointsCount) % path1.realPointsCount;
+            lastStartIdx = (((lastStartIdx + startDirection) % path1.realPointsCount) +path1.realPointsCount) % path1.realPointsCount;
+
+
+
+    }
+}
 }
