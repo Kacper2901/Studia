@@ -50,6 +50,10 @@ class Main {
         data.sectionIdx = sectionIdx;
     }
 
+    public static TPoint getFirstPathPoint(TSectionPath path){
+        return path.sections[0].begPoint;
+    }
+
     public static TSection Section(TPoint begPoint, TPoint endPoint) {
         TSection section = new TSection();
         setSection(section, begPoint, endPoint);
@@ -356,11 +360,11 @@ class Main {
         PointsCountAndSectionIdx pointsCountAndSectionIdx = findSectionWithNthIdx(sectionPath, startIdx);
         int currSectionIdx = pointsCountAndSectionIdx.sectionIdx;
         TSection currSection = sectionPath.sections[currSectionIdx];
-        int currPointsCount = pointsCountAndSectionIdx.pointsCount - 1;
+        int currPointsCount = pointsCountAndSectionIdx.pointsCount;
         int currTextIdx = 0;
 
 
-        int currIdx = currPointsCount - 1;
+        int currIdx = currPointsCount -1;
         int dx = getDirection(currSection.begPoint.x, currSection.endPoint.x);
         int dy = getDirection(currSection.begPoint.y, currSection.endPoint.y);
         TPoint tempPoint = point(currSection.endPoint.x, currSection.endPoint.y);
@@ -370,8 +374,8 @@ class Main {
             tempPoint.x -= dx;
             tempPoint.y -= dy;
         }
-        tempPoint.x -= dx;
-        tempPoint.y -= dy;
+//        tempPoint.x -= dx;
+//        tempPoint.y -= dy;
 
         //starts writing string
         while (currTextIdx < text.length()) {
@@ -383,6 +387,7 @@ class Main {
             if (arePointsEqual(tempPoint, currSection.endPoint)) {
                 drawPoint(tempPoint, text.charAt(currTextIdx));
                 currTextIdx++;
+                if (currTextIdx >= text.length()) return;
                 TPoint pastEndPoint = currSection.endPoint;
                 currSectionIdx++;
                 currPointsCount++;
@@ -402,6 +407,7 @@ class Main {
             }
             drawPoint(tempPoint, text.charAt(currTextIdx));
             currTextIdx++;
+            if (currTextIdx >= text.length()) return;
             currPointsCount++;
             tempPoint.x += dx;
             tempPoint.y += dy;
@@ -430,7 +436,7 @@ class Main {
         PointsCountAndSectionIdx pointsCountAndSectionIdx = findSectionWithNthIdx(sectionPath, startIdx);
         int currSectionIdx = pointsCountAndSectionIdx.sectionIdx;
         TSection currSection = sectionPath.sections[currSectionIdx];
-        int currPointsCount = pointsCountAndSectionIdx.pointsCount -1;
+        int currPointsCount = pointsCountAndSectionIdx.pointsCount;
         int currTextIdx = 0;
 
 
@@ -444,8 +450,8 @@ class Main {
             tempPoint.x -= dx;
             tempPoint.y -= dy;
         }
-        tempPoint.x -= dx;
-        tempPoint.y -= dy;
+//        tempPoint.x -= dx;
+//        tempPoint.y -= dy;
 
         //starts writing string
         while (currTextIdx < text.length()) {
@@ -457,6 +463,7 @@ class Main {
             if (arePointsEqual(tempPoint, currSection.begPoint)) {
                 drawPoint(tempPoint, text.charAt(currTextIdx));
                 currTextIdx++;
+                if (currTextIdx >= text.length()) return;
                 TPoint pastBegPoint = currSection.begPoint;
                 currSectionIdx--;
                 currPointsCount++;
@@ -475,6 +482,7 @@ class Main {
             }
             drawPoint(tempPoint, text.charAt(currTextIdx));
             currTextIdx++;
+            if (currTextIdx >= text.length()) return;
             currPointsCount++;
             tempPoint.x -= dx;
             tempPoint.y -= dy;
@@ -490,13 +498,28 @@ class Main {
     }
 
     static boolean hitStrings(int s1_first, int s1_last, int s2_first, int s2_last) {
-        return (Math.abs(s1_first - s2_first) < 2 || Math.abs(s1_last - s2_last) < 2) || Math.abs(s1_first - s1_last) < 2 || Math.abs(s1_first - s2_last) < 2;
+        return  Math.abs(s1_first - s2_first) < 2
+                || Math.abs(s1_last  - s2_last)  < 2
+                || Math.abs(s1_first - s2_last)  < 2
+                || Math.abs(s1_last  - s2_first) < 2;
     }
 
     static void updateSmallFrame(TSectionPath path, int bee1Idx, int bee2Idx) {
-        String text1 = "*Bee ready!";
+        String text1 = "**Bee ready!";
         writeStringOnPath(path, text1, bee1Idx);
         writeStringOnPath(path, text1, bee2Idx);
+    }
+
+    public static void cancelChar(TSectionPath sectionPath, int idx, char c, String text){
+        int textLength = text.length();
+        if(sectionPath.stringDirection == 0) {
+            drawPoint(getPathNthPoint(sectionPath,idx - 1), c);
+            drawPoint(getPathNthPoint(sectionPath, idx + textLength + 2), c);
+        }
+        else{
+            drawPoint(getPathNthPoint(sectionPath,idx - 1), c);
+            drawPoint(getPathNthPoint(sectionPath, idx + textLength + 2), c);
+        }
     }
 
 
@@ -509,12 +532,12 @@ class Main {
         writeStringOnPath(path, start, startIdx);
 
 
+
     }
 
 
     static void main(String[] args) {
         clrscr();
-        Main main = new Main();
         clrscr();
         TSectionPath path1 = createElements(TSectionPath.class);
         TSectionPath path2 = createElements(TSectionPath.class);
@@ -525,10 +548,10 @@ class Main {
         setSectionPath(path2);
 
 
-        String welcomeClock = "*>>Welcome to our game!<<";
-        String welcomeAntiClock = ">>Welcome to our game!<<*";
-        String startAntiClock = "*>>Press s to start<<";
-        String startClock = ">>Press s to start<<*";
+        String welcomeClock = "**>>Welcome to our game!<<";
+        String welcomeAntiClock = ">>Welcome to our game!<<**";
+        String startAntiClock = "**>>Press s to start<<";
+        String startClock = ">>Press s to start<<**";
 
         String currWelcome = welcomeAntiClock;
         String currStart = startClock;
@@ -536,11 +559,11 @@ class Main {
 
         addMultipleSegments(path1, Section(point(1, 1), point(120, 1)), Section(point(120, 1), point(120, 30)), Section(point(120, 30), point(1, 30)), Section(point(1, 30), point(1, 1)));
         addMultipleSegments(path2, Section(point(50, 7), point(70, 7)), Section(point(70, 7), point(70, 22)), Section(point(70, 22), point(50, 22)), Section(point(50, 22), point(50, 7)));
+
         setfgcolor(yellow);
         drawSectionPath(path1, '*');
         setfgcolor(green);
         drawSectionPath(path2, '*');
-
         path1.realPointsCount = getPathLength(path1);
         path2.realPointsCount = getPathLength(path2);
 
@@ -549,6 +572,7 @@ class Main {
         path1.stringDirection = 0;
         path2.wrapped = 1;
         int currBeeIdx = 0;
+
 
         int currWelcomeIdx = (120 - 24) / 2;
         int lastWelcomeIdx = currWelcomeIdx + 24;
@@ -559,6 +583,11 @@ class Main {
         int startDirection = 1;
         path1.stringDirection = 1;
         int flag = 0;
+        int firstStartCollisionIdx = currStartIdx - 2;
+        int lastStartCollisionIdx = lastStartIdx + 2;
+        int firstWelcomeCollisionIdx = currWelcomeIdx + 2;
+        int lastWelcomeCollisionIdx = lastWelcomeIdx - 2;
+
 
 
         while (true) {
@@ -574,9 +603,22 @@ class Main {
                 updateBigFrame(path1, currStartIdx, currWelcomeIdx, welcomeClock, startAntiClock);
             }
 
-            delay(50);
+            delay(10);
             currBeeIdx++;
-            if (hitStrings(currStartIdx, lastStartIdx, currWelcomeIdx, lastWelcomeIdx)) {
+            if(welcomeDirection == 1){
+                 firstStartCollisionIdx = currStartIdx;
+                 lastStartCollisionIdx = lastStartIdx - 2;
+                 firstWelcomeCollisionIdx = currWelcomeIdx;
+                 lastWelcomeCollisionIdx = lastWelcomeIdx + 1;
+            }
+            else {
+                 lastStartCollisionIdx = currStartIdx;
+                 firstStartCollisionIdx = lastStartIdx;
+                 lastWelcomeCollisionIdx = currWelcomeIdx;
+                 firstWelcomeCollisionIdx = lastWelcomeIdx;
+            }
+            if (hitStrings(firstStartCollisionIdx, lastStartCollisionIdx, firstWelcomeCollisionIdx, lastWelcomeCollisionIdx)) {
+                delay(2000);
 
                 if (flag == 0) {
                     setfgcolor(green);
