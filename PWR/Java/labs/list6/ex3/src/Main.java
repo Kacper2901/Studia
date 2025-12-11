@@ -10,8 +10,12 @@ class Main {
     final static int NOT_WRAP = 0;
     final static int TOWARDS_END = 0;
     final static int TOWARDS_BEGINNING = 1;
+
+    final static String SMALL_RECTANGLE_TEXT1 = "Be ready!";
+    final static String SMALL_RECTANGLE_TEXT2 = "Be ready!";
     final static String BIG_RECTANGLE_TEXT1 = ">>Welcome to our world!<<";
     final static String BIG_RECTANGLE_TEXT2 = ">>Press space to start<<";
+    final static String SPIRAL_TEXT = "SPIRAL SPIRAL";
 
     public static class TSectionPath {
         TSection[] sections; //stores only corners, beggining and end
@@ -20,12 +24,10 @@ class Main {
         int stringDirection;
         int sectionsCount;
         int color;
-        int past1Idx;
-        int past2Idx;
+        double past1Idx;
+        double past2Idx;
         double string1Idx;
         double string2Idx;
-        int roundedString1Idx;
-        int roundedString2Idx;
         int pathLength;
     }
 
@@ -45,9 +47,10 @@ class Main {
         TSectionPath weirdPath;
         TSectionPath spiral;
         boolean breakFlag;
-        int stringSpeed;
+        double stringSpeed;
         boolean bounceFlag;
         int loopCount;
+        double lastTimeMilis;
     }
 
 
@@ -75,6 +78,7 @@ class Main {
         setPointsCountAndSectionIdx(data, pointsCount, sectionIdx);
         return data;
     }
+
 
     public static void setPointsCountAndSectionIdx(PointsCountAndSectionIdx data, int pointsCount, int sectionIdx) {
         data.pointsCount = pointsCount;
@@ -547,6 +551,30 @@ class Main {
         return path;
     }
 
+
+    static void clearOldString(TSectionPath path, int startIdx, int pastStartIdx, int writeDirection, String text){
+
+        int idxDifference = startIdx - pastStartIdx;
+        if (idxDifference == 0) return;
+        int steps = Math.abs(idxDifference);
+        String cover = "*".repeat(steps);
+
+        if (writeDirection == 0) {
+            if (idxDifference > 0) {
+                writeTowardsEnd(path, cover, pastStartIdx);
+            } else {
+                writeTowardsEnd(path, cover, startIdx + text.length());
+            }
+        }
+        else {
+            if (idxDifference > 0) {
+                writeTowardsBeginning(path, cover, startIdx - text.length());
+            } else {
+                writeTowardsBeginning(path, cover, pastStartIdx);
+            }
+        }
+    }
+
     static void interpretInputKey(TBoard board, String key){
         switch (key){
             case "q":
@@ -623,26 +651,42 @@ class Main {
         return path;
     }
 
-    static void updateSmallRectangle(TBoard board, TSectionPath path, double time){
-        int direction = (path.stringDirection == 0) ? 1 : -1;
-        path.past1Idx = (int)path.string1Idx;
-        path.string1Idx  = safeModulo(path.string1Idx + direction * board.stringSpeed * time, path.pathLength);
-        path.string2Idx  = safeModulo(path.string1Idx + 35 + direction, path.pathLength);
-    }
-
-    static void updateBigRectangle(TBoard board, TSectionPath path){
+    static void updateSmallRectangle(TBoard board, TSectionPath path, double deltaTime){
         int direction = (path.stringDirection == 0) ? 1 : -1;
         path.past1Idx = path.string1Idx;
         path.past2Idx = path.string2Idx;
-        path.string1Idx = safeModulo(path.string1Idx + direction, path.pathLength);
-        path.string2Idx = safeModulo(path.string2Idx - direction, path.pathLength);
-        if(Math.abs(path.string1Idx - path.string2Idx) <= 1 || Math.abs(path.string1Idx + BIG_RECTANGLE_TEXT1.length() - (path.string2Idx - BIG_RECTANGLE_TEXT2.length()) - 1) <= 1){
+        path.string1Idx  += direction * deltaTime * board.stringSpeed;
+        path.string2Idx  += direction * deltaTime * board.stringSpeed;
+    }
+
+    static void updateBigRectangle(TBoard board, TSectionPath path, double timeStep){
+        int direction = (path.stringDirection == 0) ? 1 : -1;
+        path.past1Idx = path.string1Idx;
+        path.past2Idx = path.string2Idx;
+        path.string1Idx += direction*timeStep*board.stringSpeed;
+        path.string2Idx -= direction*timeStep*board.stringSpeed;
+
+        if(path.string1Idx >= path.pathLength) path.string1Idx -= path.pathLength;
+        if(path.string2Idx >= path.pathLength) path.string2Idx -= path.pathLength;
+        if(path.string1Idx < 0) path.string1Idx += path.pathLength;
+        if(path.string2Idx < 0) path.string2Idx += path.pathLength;
+        int roundedIdx1 = safeModulo((int)path.string1Idx, path.pathLength);
+        int roundedIdx2 = safeModulo((int)path.string2Idx, path.pathLength);
+        if(Math.abs(roundedIdx1 - roundedIdx2) <= 1 || Math.abs(roundedIdx1 + BIG_RECTANGLE_TEXT1.length() - (roundedIdx2 - BIG_RECTANGLE_TEXT2.length()) - 1) <= 1){
             path.stringDirection = (path.stringDirection + 1) % 2;
             board.bounceFlag = true;
         }
+    }
 
+    static void updateSpiral(TBoard board, TSectionPath path, double timeStep){
+        int direction = (path.stringDirection == 0) ? 1 : -1;
+        path.past1Idx = path.string1Idx;
+        path.string1Idx += direction*timeStep*board.stringSpeed;
 
-
+        if((int)path.string1Idx + SPIRAL_TEXT.length() == path.pathLength || (int)path.string1Idx == 0){
+            path.stringDirection = (path.stringDirection + 1) % 2;
+            board.bounceFlag = true;
+        }
     }
 
     static void drawBoard(TBoard board){
@@ -657,40 +701,47 @@ class Main {
         drawSectionPath(board.spiral, '+');
     }
 
+
     static void controller(TBoard board){
         String keystr = "";
-        if(board.loopCount % board.stringSpeed == 0 && keypressed()) keystr = readkeystr();
+        if(keypressed()) keystr = readkeystr();
+
         model(board, keystr);
     }
 
     static void model(TBoard board, String key){
         interpretInputKey(board, key);
-        updateSmallRectangle(board, board.smallRectangle);
-        updateBigRectangle(board, board.bigRectangle);
-        if(board.stringSpeed >= 6 && board.loopCount % board.stringSpeed ==0 ) board.stringSpeed -= 1;
+        double currTimeMs = System.currentTimeMillis();
+        double deltaTime = (currTimeMs - board.lastTimeMilis) / 1000;
+        board.lastTimeMilis = currTimeMs;
+        if(board.stringSpeed >= 5.6) board.stringSpeed -= 0.6;
+
+
+        updateSmallRectangle(board, board.smallRectangle, deltaTime);
+        updateBigRectangle(board, board.bigRectangle, deltaTime);
+        updateSpiral(board,board.spiral, deltaTime);
+
 
         view(board);
     }
 
     static void view(TBoard board){
         setfgcolor(board.smallRectangle.color);
-        writeStringOnPath(board.smallRectangle, "*", board.smallRectangle.past1Idx);
-        writeStringOnPath(board.smallRectangle, "*", safeModulo(board.smallRectangle.past1Idx + 36, board.smallRectangle.pathLength));
+        clearOldString(board.smallRectangle, (int)board.smallRectangle.string1Idx, (int)board.smallRectangle.past1Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1);
+        clearOldString(board.smallRectangle, (int)board.smallRectangle.string2Idx, (int)board.smallRectangle.past2Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1);
         setfgcolor(board.bigRectangle.color);
-        if(board.bigRectangle.stringDirection == 1) {
-            writeStringOnPath(board.bigRectangle, "*", board.bigRectangle.past1Idx + BIG_RECTANGLE_TEXT1.length() - 1);
-            writeStringOnPath(board.bigRectangle, "*", board.bigRectangle.past2Idx  - BIG_RECTANGLE_TEXT2.length() + 1 );
-        }
-        else{
-            writeStringOnPath(board.bigRectangle, "*", board.bigRectangle.past1Idx);
-            writeStringOnPath(board.bigRectangle, "*", board.bigRectangle.past2Idx);
-        }
-        writeStringOnPath(board.smallRectangle, "Be ready!", board.smallRectangle.string1Idx);
-        writeStringOnPath(board.smallRectangle, "Be ready!", board.smallRectangle.string2Idx);
+        clearOldString(board.bigRectangle, (int)board.bigRectangle.string1Idx, (int)board.bigRectangle.past1Idx, 0  ,BIG_RECTANGLE_TEXT1);
+        clearOldString(board.bigRectangle, (int)board.bigRectangle.string2Idx, (int)board.bigRectangle.past2Idx, 1,BIG_RECTANGLE_TEXT2);
+        setfgcolor(board.spiral.color);
+        clearOldString(board.spiral, (int)board.spiral.string1Idx, (int)board.spiral.past1Idx, 0, SPIRAL_TEXT);
+        writeStringOnPath(board.smallRectangle, "Be ready!", (int)board.smallRectangle.string1Idx);
+        writeStringOnPath(board.smallRectangle, "Be ready!", (int)board.smallRectangle.string2Idx);
         setfgcolor(ltgreen);
-        writeTowardsEnd(board.bigRectangle, BIG_RECTANGLE_TEXT1, board.bigRectangle.string1Idx);
+        writeTowardsEnd(board.bigRectangle, BIG_RECTANGLE_TEXT1, safeModulo((int)board.bigRectangle.string1Idx, board.bigRectangle.pathLength));
         setfgcolor(blue);
-        writeTowardsBeginning(board.bigRectangle, BIG_RECTANGLE_TEXT2, board.bigRectangle.string2Idx);
+        writeTowardsBeginning(board.bigRectangle, BIG_RECTANGLE_TEXT2, safeModulo((int)board.bigRectangle.string2Idx, board.bigRectangle.pathLength));
+        setfgcolor(red);
+        writeTowardsEnd(board.spiral, SPIRAL_TEXT, safeModulo((int)board.spiral.string1Idx, board.spiral.pathLength));
 
     }
 
@@ -711,6 +762,7 @@ class Main {
         board.spiral.pathLength = getPathLength(board.spiral);
         board.bigRectangle.stringDirection = 1;
         board.smallRectangle.string1Idx = 0;
+        board.smallRectangle.string2Idx = 35;
         board.bigRectangle.string1Idx = 47;
         board.bigRectangle.string2Idx = 225;
         drawBoard(board);
@@ -719,6 +771,7 @@ class Main {
 
     static void startAnimation(TBoard board){
         cursor_hide();
+        board.lastTimeMilis = System.currentTimeMillis();
         while(!board.breakFlag){
             if(board.bounceFlag){
                 board.stringSpeed = 20;
