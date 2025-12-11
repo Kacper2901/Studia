@@ -16,6 +16,7 @@ class Main {
     final static String BIG_RECTANGLE_TEXT1 = ">>Welcome to our world!<<";
     final static String BIG_RECTANGLE_TEXT2 = ">>Press space to start<<";
     final static String SPIRAL_TEXT = "SPIRAL SPIRAL";
+    final static String WEIRD_PATH_TEXT = "Pathmania mode! Pathy paths everywhere!";
 
     public static class TSectionPath {
         TSection[] sections; //stores only corners, beggining and end
@@ -65,7 +66,7 @@ class Main {
         board.weirdPath = weirdPath;
         board.breakFlag =false;
         board.bounceFlag = false;
-        board.stringSpeed = 20;
+        board.stringSpeed = 5;
     }
 
     public static class TPoint {
@@ -552,12 +553,12 @@ class Main {
     }
 
 
-    static void clearOldString(TSectionPath path, int startIdx, int pastStartIdx, int writeDirection, String text){
+    static void clearOldString(TSectionPath path, int startIdx, int pastStartIdx, int writeDirection, String text, String c){
 
         int idxDifference = startIdx - pastStartIdx;
         if (idxDifference == 0) return;
         int steps = Math.abs(idxDifference);
-        String cover = "*".repeat(steps);
+        String cover = c.repeat(steps);
 
         if (writeDirection == 0) {
             if (idxDifference > 0) {
@@ -672,9 +673,18 @@ class Main {
         if(path.string2Idx < 0) path.string2Idx += path.pathLength;
         int roundedIdx1 = safeModulo((int)path.string1Idx, path.pathLength);
         int roundedIdx2 = safeModulo((int)path.string2Idx, path.pathLength);
-        if(Math.abs(roundedIdx1 - roundedIdx2) <= 1 || Math.abs(roundedIdx1 + BIG_RECTANGLE_TEXT1.length() - (roundedIdx2 - BIG_RECTANGLE_TEXT2.length()) - 1) <= 1){
+        if((int)path.string1Idx <= (int)path.string2Idx && (int)path.string1Idx > 250){
+            board.bounceFlag = true;
+            path.stringDirection = (path.stringDirection + 1) % 2;
+            path.string1Idx = path.string2Idx + 1;
+
+        }
+        else if((int)path.string1Idx + BIG_RECTANGLE_TEXT1.length() - 1 >= (int)path.string2Idx - BIG_RECTANGLE_TEXT2.length() + 1 && (int)path.string1Idx < 250){
             path.stringDirection = (path.stringDirection + 1) % 2;
             board.bounceFlag = true;
+            path.string1Idx = path.string2Idx + 2 - BIG_RECTANGLE_TEXT2.length() - BIG_RECTANGLE_TEXT1.length();
+
+
         }
     }
 
@@ -683,10 +693,23 @@ class Main {
         path.past1Idx = path.string1Idx;
         path.string1Idx += direction*timeStep*board.stringSpeed;
 
-        if((int)path.string1Idx + SPIRAL_TEXT.length() == path.pathLength || (int)path.string1Idx == 0){
+        if((int)path.string1Idx + SPIRAL_TEXT.length() > path.pathLength - 1|| ((int)path.string1Idx < 0)){
+            if((int)path.string1Idx < 0) path.string1Idx = 0;
+            else path.string1Idx = path.pathLength  - SPIRAL_TEXT.length();
             path.stringDirection = (path.stringDirection + 1) % 2;
+
             board.bounceFlag = true;
         }
+    }
+
+    static void updateWeirdPath(TBoard board, TSectionPath path, double timeStep){
+        int direction = (path.stringDirection == 0) ? 1 : -1;
+        path.past1Idx = path.string1Idx;
+        path.string1Idx += direction*timeStep*board.stringSpeed;
+        if(path.string1Idx >= path.pathLength) path.string1Idx -= path.pathLength;
+        if(path.string2Idx >= path.pathLength) path.string2Idx -= path.pathLength;
+        if(path.string1Idx < 0) path.string1Idx += path.pathLength;
+        if(path.string2Idx < 0) path.string2Idx += path.pathLength;
     }
 
     static void drawBoard(TBoard board){
@@ -714,9 +737,9 @@ class Main {
         double currTimeMs = System.currentTimeMillis();
         double deltaTime = (currTimeMs - board.lastTimeMilis) / 1000;
         board.lastTimeMilis = currTimeMs;
-        if(board.stringSpeed >= 5.6) board.stringSpeed -= 0.6;
+        if(board.stringSpeed <= 19) board.stringSpeed += 1;
 
-
+        updateWeirdPath(board,board.weirdPath, deltaTime);
         updateSmallRectangle(board, board.smallRectangle, deltaTime);
         updateBigRectangle(board, board.bigRectangle, deltaTime);
         updateSpiral(board,board.spiral, deltaTime);
@@ -727,13 +750,14 @@ class Main {
 
     static void view(TBoard board){
         setfgcolor(board.smallRectangle.color);
-        clearOldString(board.smallRectangle, (int)board.smallRectangle.string1Idx, (int)board.smallRectangle.past1Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1);
-        clearOldString(board.smallRectangle, (int)board.smallRectangle.string2Idx, (int)board.smallRectangle.past2Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1);
+        clearOldString(board.smallRectangle, (int)board.smallRectangle.string1Idx, (int)board.smallRectangle.past1Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1, "*");
+        clearOldString(board.smallRectangle, (int)board.smallRectangle.string2Idx, (int)board.smallRectangle.past2Idx, board.smallRectangle.stringDirection, SMALL_RECTANGLE_TEXT1, "*");
         setfgcolor(board.bigRectangle.color);
-        clearOldString(board.bigRectangle, (int)board.bigRectangle.string1Idx, (int)board.bigRectangle.past1Idx, 0  ,BIG_RECTANGLE_TEXT1);
-        clearOldString(board.bigRectangle, (int)board.bigRectangle.string2Idx, (int)board.bigRectangle.past2Idx, 1,BIG_RECTANGLE_TEXT2);
+        clearOldString(board.bigRectangle, (int)board.bigRectangle.string1Idx, (int)board.bigRectangle.past1Idx, 0  ,BIG_RECTANGLE_TEXT1, "*");
+        clearOldString(board.bigRectangle, (int)board.bigRectangle.string2Idx, (int)board.bigRectangle.past2Idx, 1,BIG_RECTANGLE_TEXT2, "*");
         setfgcolor(board.spiral.color);
-        clearOldString(board.spiral, (int)board.spiral.string1Idx, (int)board.spiral.past1Idx, 0, SPIRAL_TEXT);
+        clearOldString(board.spiral, (int)board.spiral.string1Idx, (int)board.spiral.past1Idx, 0, SPIRAL_TEXT, "+");
+        clearOldString(board.weirdPath, (int)board.weirdPath.string1Idx, (int)board.weirdPath.past1Idx, board.weirdPath.stringDirection, WEIRD_PATH_TEXT, "+");
         writeStringOnPath(board.smallRectangle, "Be ready!", (int)board.smallRectangle.string1Idx);
         writeStringOnPath(board.smallRectangle, "Be ready!", (int)board.smallRectangle.string2Idx);
         setfgcolor(ltgreen);
@@ -742,6 +766,8 @@ class Main {
         writeTowardsBeginning(board.bigRectangle, BIG_RECTANGLE_TEXT2, safeModulo((int)board.bigRectangle.string2Idx, board.bigRectangle.pathLength));
         setfgcolor(red);
         writeTowardsEnd(board.spiral, SPIRAL_TEXT, safeModulo((int)board.spiral.string1Idx, board.spiral.pathLength));
+        setfgcolor(white);
+        writeTowardsEnd(board.weirdPath, WEIRD_PATH_TEXT, safeModulo((int)board.weirdPath.string1Idx, board.weirdPath.pathLength));
 
     }
 
@@ -765,6 +791,7 @@ class Main {
         board.smallRectangle.string2Idx = 35;
         board.bigRectangle.string1Idx = 47;
         board.bigRectangle.string2Idx = 225;
+        board.spiral.string1Idx = 0.9;
         drawBoard(board);
 
     }
@@ -774,7 +801,7 @@ class Main {
         board.lastTimeMilis = System.currentTimeMillis();
         while(!board.breakFlag){
             if(board.bounceFlag){
-                board.stringSpeed = 20;
+                board.stringSpeed = 5;
                 board.bounceFlag = false;
             }
             board.loopCount = (board.loopCount + 1) % 1000;
