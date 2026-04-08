@@ -1,0 +1,18 @@
+
+go 10
+ld doc1
+link=a
+link=a
+link=a
+link=a
+link=b
+link=b
+link=b
+link=a
+link=c
+link=c
+link=g
+eod
+show
+remDup
+show
