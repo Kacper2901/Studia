@@ -2,23 +2,37 @@ package dsaa.lab04;
 
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 
 public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 
 	private class Element{
+
 		public Element(E e) {
-			//TODO
+            object = e;
+            next = null;
+            prev = null;
 		}
 		public Element(E e, Element next, Element prev) {
-			//TODO
+            object = e;
+            this.next = next;
+            this.prev = prev;
 		}
 		// add element e after this
 		public void addAfter(Element elem) {
-			//TODO
+
+            Element next = this.next;
+            this.next = elem;
+            this.next.prev = this;
+            this.next.next = next;
+            this.next.next.prev = this.next;
+
 		}
 		// assert it is NOT a sentinel
 		public void remove() {
-			//TODO
+            this.prev.next = this.next;
+            this.next.prev = this.prev;
+
 		}
 		E object;
 		Element next=null;
@@ -30,56 +44,59 @@ public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 	int size;
 
 	private class InnerIterator implements Iterator<E>{
-		//TODO
+        Element curr;
 		public InnerIterator() {
-			//TODO
+            curr = sentinel.next;
 		}
 		@Override
 		public boolean hasNext() {
-			//TODO
-			return false;
+			return curr != sentinel;
 		}
 
 		@Override
 		public E next() {
-			//TODO
-			return null;
+            if(!hasNext()) throw new NoSuchElementException();
+            E val = curr.object;
+			curr = curr.next;
+			return val;
 		}
 	}
 
 	private class InnerListIterator implements ListIterator<E>{
-		//TODO
+        Element curr;
 		public InnerListIterator() {
-			//TODO
+            curr = sentinel.next;
 		}
 		@Override
 		public boolean hasNext() {
-			//TODO
-			return false;
-		}
+            return curr != sentinel;
+        }
 
 		@Override
 		public E next() {
-			//TODO
-			return null;
-		}
+            if(!hasNext()) throw new NoSuchElementException();
+            E val = curr.object;
+            curr = curr.next;
+            return val;
+        }
+
 		@Override
 		public void add(E arg0) {
 			throw new UnsupportedOperationException();
 		}
 		@Override
 		public boolean hasPrevious() {
-			//TODO
-			return false;
-		}
+            return curr.prev != sentinel;
+        }
 		@Override
 		public int nextIndex() {
 			throw new UnsupportedOperationException();
 		}
 		@Override
 		public E previous() {
-			//TODO
-			return null;
+            if(!hasPrevious()) throw new NoSuchElementException();
+            curr = curr.prev;
+            return curr.object;
 		}
 		@Override
 		public int previousIndex() {
@@ -95,24 +112,56 @@ public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 		}
 	}
 	public TwoWayCycledOrderedListWithSentinel() {
-		//TODO
+        sentinel = new Element(null);
+        sentinel.prev = sentinel;
+        sentinel.next = sentinel;
+        size = 0;
 	}
 
 	//@SuppressWarnings("unchecked")
 	@Override
 	public boolean add(E e) {
-		//TODO
-		return false;
+        if(this.isEmpty()){
+            sentinel.next = new Element(e, sentinel, sentinel);
+            sentinel.prev = sentinel.next;
+            size++;
+            return true;
+        }
+        Element curr = sentinel.next;
+        while (curr != sentinel && ((Comparable<E>)curr.object).compareTo(e) <= 0){
+            curr = curr.next;
+        }
+        Element newElem = new Element(e, curr, curr.prev);
+        curr.prev.next = newElem;
+        curr.prev = newElem;
+        size++;
+
+		return true;
 	}
 
 	private Element getElement(int index) {
-		//TODO
-		return null;
+        if(index >= size || index < 0) throw new NoSuchElementException();
+        int i = -1;
+        Element curr = sentinel;
+        while(i < index){
+            curr = curr.next;
+            i++;
+        }
+
+
+		return curr;
 	}
 
 	private Element getElement(E obj) {
-		//TODO
-		return null;
+        if(!contains(obj)) throw new NoSuchElementException();
+
+        Element curr = sentinel.next;
+        while(curr != sentinel){
+            if(curr.object.equals(obj)) return curr;
+            curr = curr.next;
+        }
+
+		throw new NoSuchElementException();
 	}
 
 	@Override
@@ -123,19 +172,25 @@ public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 
 	@Override
 	public void clear() {
-		//TODO
-	}
+        sentinel.next = sentinel;
+        sentinel.prev = sentinel;
+        size = 0;
+    }
 
 	@Override
 	public boolean contains(E element) {
-		//TODO
-		return false;
+        Element curr = sentinel.next;
+        while(curr != sentinel){
+            if(curr.object.equals(element)) return true;
+            curr = curr.next;
+        }
+
+        return false;
 	}
 
 	@Override
 	public E get(int index) {
-		//TODO
-		return null;
+		return getElement(index).object;
 	}
 
 	@Override
@@ -145,14 +200,19 @@ public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 
 	@Override
 	public int indexOf(E element) {
-		//TODO
-		return -1;
+        int i = 0;
+        Element curr = sentinel.next;
+        while(curr != sentinel){
+            if(curr.object.equals(element)) return i;
+            curr = curr.next;
+            i++;
+        }
+        return -1;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		//TODO
-		return true;
+		return sentinel.next == sentinel && sentinel.prev == sentinel;
 	}
 
 	@Override
@@ -167,31 +227,92 @@ public class TwoWayCycledOrderedListWithSentinel<E> implements IList<E>{
 
 	@Override
 	public E remove(int index) {
-		//TODO
-		return null;
+        if(index < 0 || index > size - 1) throw new NoSuchElementException();
+		Element elemToRemove = getElement(index);
+
+        elemToRemove.next.prev = elemToRemove.prev;
+        elemToRemove.prev.next = elemToRemove.next;
+        size--;
+		return elemToRemove.object;
 	}
 
-	@Override
-	public boolean remove(E e) {
-		//TODO
-		return false;
-	}
+        @Override
+        public boolean remove(E e) {
+            try {
+                int indexToRemove = indexOf(e);
+                if(indexToRemove == -1) return false;
+                remove(indexToRemove);
+                return true;
+            }
+            catch (NoSuchElementException exception){
+                return false;
+            }
+        }
 
 	@Override
 	public int size() {
-		//TODO
-		return -1;
+		return size;
 	}
 
 	//@SuppressWarnings("unchecked")
 	public void add(TwoWayCycledOrderedListWithSentinel<E> other) {
-		//TODO
-	}
+        if (other == null || other == this || other.isEmpty()) return;
+        if (this.isEmpty()){
+            this.sentinel.next = other.sentinel.next;
+            this.sentinel.prev = other.sentinel.prev;
+            sentinel.next.prev = sentinel;
+            sentinel.prev.next = sentinel;
+            size = other.size;
+            other.clear();
+            return;
+        }
+
+        Element curr = sentinel.next;
+        Element currOther = other.sentinel.next;
+
+        while (currOther != other.sentinel) {
+
+            while (curr != sentinel && ((Comparable<E>)curr.object).compareTo(currOther.object) <= 0) {
+                curr = curr.next;
+            }
+
+            Element otherTemp = currOther.next;
+            currOther.next = curr;
+            currOther.prev = curr.prev;
+            curr.prev.next = currOther;
+            curr.prev = currOther;
+            size++;
+            currOther = otherTemp;
+        }
+
+        other.clear();
+    }
 	
 	//@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void removeAll(E e) {
-		//TODO
+		Element currElem = sentinel.next;
+        while (currElem != sentinel){
+            if (currElem.object.equals(e)){
+                currElem.prev.next = currElem.next;
+                currElem.next.prev = currElem.prev;
+                size--;
+            }
+            currElem = currElem.next;
+        }
 	}
 
+    public void removeDuplicates(){
+        if(isEmpty()) return;
+        Element curr = sentinel.next;
+
+        while(curr != sentinel){
+            while(curr.next != sentinel && curr.object.equals(curr.next.object)){
+                curr.next = curr.next.next;
+                curr.next.prev = curr;
+                size--;
+            }
+            curr = curr.next;
+        }
+    }
 }
 

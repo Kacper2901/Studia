@@ -127,8 +127,12 @@ public class Main {
 				int number=Integer.parseInt(word[1]);
 				doc[currentDocNo].link.add(doc[number].link);
 				continue;
-			}				
-			System.out.println("Wrong command");			
+			}
+            if(word[0].equalsIgnoreCase("rmDup") && word.length==1) {
+                doc[currentDocNo].link.removeDuplicates();
+                continue;
+            }
+            System.out.println("Wrong command");
 		}
 		System.out.println("END OF EXECUTION");
 		scan.close();
