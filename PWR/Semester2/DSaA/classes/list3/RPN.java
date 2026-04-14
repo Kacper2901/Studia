@@ -45,7 +45,7 @@ public class RPN {
         if(numbers.size()!= 1) throw new IllegalArgumentException();
         return numbers.pop();
         }
-    }
+
 
     private boolean isNumber(String token) {
         try {

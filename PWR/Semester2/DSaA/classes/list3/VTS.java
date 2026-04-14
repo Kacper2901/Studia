@@ -1,21 +1,22 @@
 import aisd.stack.*;
 
-
-
-
 public class VTS<E> extends ListStack<E>{
     private Integer cursor = 0;
 
+
     public E peek() throws EmptyStackException{
+        //TODO
         if(_list.isEmpty()) throw new EmptyStackException();
         return _list.get(cursor);
     }
 
     public void cursorTop(){
+        //TODO
         cursor = 0;
     }
 
     public void cursorDown() throws BottomOfTheListException{
+        //TODO
         if(_list.isEmpty() || cursor >= size()-1) throw new BottomOfTheListException();
         cursor++;
     }

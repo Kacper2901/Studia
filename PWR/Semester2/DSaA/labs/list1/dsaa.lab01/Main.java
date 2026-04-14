@@ -48,6 +48,12 @@ public class Main {
 				Document.loadDocument(word[1],scan);
 				continue;
 			}
+
+            if(word[0].equalsIgnoreCase("ul") && word.length==2) {
+                int value=Integer.parseInt(word[1]);
+                Drawer.drawLetterU(value);
+                continue;
+            }
 			// ha
 			if(word[0].equalsIgnoreCase("ha") && word.length==1) {
 				halt=true;

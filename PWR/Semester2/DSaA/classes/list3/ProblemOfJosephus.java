@@ -1,4 +1,3 @@
-import aisd.*;
 import aisd.queue.EmptyQueueException;
 import aisd.queue.FullQueueException;
 import aisd.queue.ListQueue;
@@ -24,4 +23,12 @@ public class ProblemOfJosephus {
         }
         return queue.first();
     }
+
+
+}
+
+void main() throws FullQueueException, EmptyQueueException {
+    ProblemOfJosephus p = new ProblemOfJosephus(20);
+    int solution = p.solveProblem(3);
+    System.out.println(solution);
 }
